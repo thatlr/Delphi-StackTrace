@@ -6,7 +6,7 @@ stack traces at exceptions or at any custom points
 in Delphi code.
 
 Because it is based on Windows StackWalk functionality,
-it works for any module, as long as a matching PDB 
+it works for any module (exe and dll), as long as a matching PDB 
 file is providing the mapping between code addresses
 and funtion names plus source code location.
 
