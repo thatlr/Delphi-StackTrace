@@ -22,7 +22,6 @@ uses Windows;
 
 type
   TConditionVariable = Windows.CONDITION_VARIABLE;
-  CONDITION_VARIABLE = Windows.CONDITION_VARIABLE deprecated;
 
   // Wraps Windows' built-in Slim Reader/Writer Lock (needs Windows Vista):
   // An initialization is not necessary if the corresponding variable is zero-initialized.

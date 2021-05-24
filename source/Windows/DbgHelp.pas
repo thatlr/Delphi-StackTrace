@@ -1,7 +1,7 @@
 unit DbgHelp;
 
 {
-  Selection of Windows API types and funktions that are needed for stacktraces.
+  Selection of Windows API types and functions that are needed for stacktraces.
 
 	DbgHelp.h
 	WinNT.h

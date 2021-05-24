@@ -428,7 +428,7 @@ end;
  // Is called by the RTL when:
  // - In the case of Delphi's own exceptions ("raise" statement): Before calling the Windows exception mechanism and thus
  //   before OsExceptionHandler.
- // - At Windows-Exception (z.B. Div-by-zero): As a reaction to the Windows exception and thus after OsExceptionHandler. 
+ // - At Windows-Exception (i.e. Div-by-zero): As a reaction to the Windows exception and thus after OsExceptionHandler. 
  //===================================================================================================================
 class function TExceptionHelp.GetExceptionStackInfo(P: PExceptionRecord): pointer;
 var
