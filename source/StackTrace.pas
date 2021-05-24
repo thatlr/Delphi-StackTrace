@@ -10,7 +10,7 @@ unit StackTrace;
 
 }
 
-{$include CompilerOptions.inc}
+{$include LibOptions.inc}
 
 interface
 
