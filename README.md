@@ -10,7 +10,7 @@ it works for any module (exe and dll), as long as a matching PDB
 file is providing the mapping between code addresses
 and funtion names plus source code location.
 
-Therefore, you can use Anders Melanders' map2pdb,
+Therefore, you can use Anders Melanders' map2pdb from https://bitbucket.org/anders_melander/map2pdb
 and enjoy nice complete and correct stack traces.
 
 Tested with:
