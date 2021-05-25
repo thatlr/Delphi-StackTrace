@@ -2,10 +2,8 @@ unit WinSlimLock;
 
 
 {
-  Unit enthält nur Definitionen, die auch in MemTest.pas verwendet werden können.
-
-  - TSlimRWLock: Struktur, die eine Slim-Reader/Writer-Lock kapselt. Bei Compilierung mit dem Symbol "WinXP"
-		wird dies durch Critical Sections simuliert.
+  Unit only contains definitions that could also be used by MemTest.pas.
+  - TSlimRWLock: Structure that wraps Windows' built-in Slim Reader/Writer Lock.
 }
 
 
@@ -23,10 +21,9 @@ uses Windows;
 
 type
   TConditionVariable = Windows.CONDITION_VARIABLE;
-  CONDITION_VARIABLE = Windows.CONDITION_VARIABLE deprecated;
 
-  // Kapselt einen Slim Reader/Writer Lock (ab Windows Vista):
-  // Eine Initialisierung ist nicht nötig, wenn die entsprechende Variable null-initialisiert ist.
+  // Wraps Windows' built-in Slim Reader/Writer Lock (needs Windows Vista):
+  // An initialization is not necessary if the corresponding variable is zero-initialized.
   TSlimRWLock = record
   strict private
 
@@ -47,7 +44,7 @@ type
 	var
 	  FLock: SRWLOCK;
   public
-	procedure Init; inline;				// nicht nötig, wenn null-initialisiert
+	procedure Init; inline;				// not needed if zero-initialized
 
 	procedure AcquireExclusive; inline;
 	function TryAcquireExclusive: boolean; inline;
@@ -78,7 +75,7 @@ class function TSlimRWLock._SleepConditionVariableSRW(var ConditionVariable: TCo
 class function TSlimRWLock._TryAcquireSRWLockExclusive(var SRWLock: SRWLOCK): BOOL; stdcall; external Windows.kernel32 name 'TryAcquireSRWLockExclusive';
 class function TSlimRWLock._TryAcquireSRWLockShared(var SRWLock: SRWLOCK): BOOL; stdcall; external Windows.kernel32 name 'TryAcquireSRWLockShared';
 
-// diese Funktionen gibt es auch in Windows.pas:
+// D2009: this functions are also in Windows.pas:
 class procedure TSlimRWLock.WakeAllConditionVariable(var ConditionVariable: TConditionVariable); stdcall; external Windows.kernel32 name 'WakeAllConditionVariable';
 class procedure TSlimRWLock.WakeConditionVariable(var ConditionVariable: TConditionVariable); stdcall; external Windows.kernel32 name 'WakeConditionVariable';
 

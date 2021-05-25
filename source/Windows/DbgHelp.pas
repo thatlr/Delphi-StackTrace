@@ -1,11 +1,9 @@
 unit DbgHelp;
 
 {
-  Ausschnitt von Windows-API-Typen und -Funktionen, die für Stacktraces benötigt werden.
-
+  Selection of Windows API types and functions that are needed for stacktraces.
 	DbgHelp.h
 	WinNT.h
-
   https://docs.microsoft.com/en-us/windows/win32/debug/updated-platform-support
 }
 
@@ -635,7 +633,6 @@ function StackWalk64(
   ): BOOL; stdcall; external DbgHelpDLL name 'StackWalk64';
 
 (*
-
 // WinNT.h:
 function RtlCaptureStackBackTrace(
 	FramesToSkip: ULONG;
@@ -643,7 +640,6 @@ function RtlCaptureStackBackTrace(
 	BackTrace: Pointer;
 	BackTraceHash: PULONG
   ): USHORT; stdcall; external Windows.kernel32 name 'RtlCaptureStackBackTrace';
-
 *)
 
 type
