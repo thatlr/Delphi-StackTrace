@@ -3,7 +3,7 @@ unit StackTrace;
 {
   Enables the collection and output of stack traces in Delphi code.
 
-  For readable and sensible results, *current* PDB files must exist in the same directory. 
+  For readable and sensible results, *current* PDB files must exist in the same directory.
 
   Anders Melander's map2pdb.exe can be used for this:
 	https://bitbucket.org/anders_melander/map2pdb/src/master/
@@ -15,14 +15,19 @@ unit StackTrace;
 interface
 
 uses
+  Windows,
   WinSlimLock,
   DbgHelp;
 
 type
-  // Supports the acquisition of stack traces with build-in Windows functionality. 
-  // The methods is also the basis for the private structure TExceptionHelp, which enables
-  // stack traces to be obtained for thrown exceptions. 
+  // Supports the acquisition of stack traces with build-in Windows functionality.
+  // The methods is also the basis for the private structure TExceptionHelp, which is used to capture
+  // stack traces when exceptions are thrown.
   TStackTraceHlp = record
+  private
+	type
+	  PAddr = ^TAddr;
+	  TAddr = DWORD_PTR;
   strict private
 	type
 	  self = TStackTraceHlp;
@@ -46,16 +51,13 @@ type
 	  FLock: TSlimRWLock;
 
 	class procedure InitDbgHelp; static;
-	class function ProcessFrame(VirtualAddr: DWORD64): TFrameInfo; static;
+	class function ProcessFrame(VirtualAddr: TAddr): TFrameInfo; static;
 	class function GetModuleFilename(hModule: HINST): string; static;
   private
-	type
-	  TAddrs = array of DWORD64;
-
 	//class procedure FiniDbgHelp; static;
 	class procedure DoSetupContext(var Ctx: CONTEXT); static;
-	class function DoGetStackTrace(SkipFrames: integer; Ctx: PCONTEXT): TAddrs; static;
-	class function InterpretStackTrace(const Addrs: TAddrs): string; static;
+	class function DoGetStackTrace(var Ctx: CONTEXT; SkipFrames: uint32; out Addrs: array of TAddr): uint32; static;
+	class function InterpretStackTrace(const Addrs: array of TAddr; Count: uint32): string; static;
   public
 	class function GetStackTrace: string; static;
   end;
@@ -67,19 +69,27 @@ implementation
 
 uses
   Types,
-  Windows,
   SysUtils;
 
 const
   CrLf = #13#10;
 
-threadvar
-  gThreadContext: DbgHelp.CONTEXT;
-
 type
+  TAddr = TStackTraceHlp.TAddr;
+
   TContextHlp = record helper for DbgHelp.CONTEXT
+  strict private
+	function GetIP: TAddr; inline;
+	function GetSP: TAddr; inline;
+	function GetBP: TAddr; inline;
+	procedure SetIP(Value: TAddr); inline;
+	procedure SetSP(Value: TAddr); inline;
+	procedure SetBP(Value: TAddr); inline;
   public
-	procedure SetNull;
+	procedure SetNull; inline;
+	property IP: TAddr read GetIP write SetIP;
+	property SP: TAddr read GetSP write SetSP;
+	property BP: TAddr read GetBP write SetBP;
   end;
 
 
@@ -109,6 +119,54 @@ begin
 end;
 
 
+ //===================================================================================================================
+ //===================================================================================================================
+function TContextHlp.GetIP: TAddr;
+begin
+  Result := {$ifdef Win64} self.Rip {$else} self.Eip {$endif};
+end;
+
+
+ //===================================================================================================================
+ //===================================================================================================================
+function TContextHlp.GetSP: TAddr;
+begin
+  Result := {$ifdef Win64} self.Rsp {$else} self.Esp {$endif};
+end;
+
+
+ //===================================================================================================================
+ //===================================================================================================================
+function TContextHlp.GetBP: TAddr;
+begin
+  Result := {$ifdef Win64} self.Rbp {$else} self.Ebp {$endif};
+end;
+
+
+ //===================================================================================================================
+ //===================================================================================================================
+procedure TContextHlp.SetIP(Value: TAddr);
+begin
+  {$ifdef Win64} self.Rip {$else} self.Eip {$endif} := Value;
+end;
+
+
+ //===================================================================================================================
+ //===================================================================================================================
+procedure TContextHlp.SetSP(Value: TAddr);
+begin
+  {$ifdef Win64} self.Rsp {$else} self.Esp {$endif} := Value;
+end;
+
+
+ //===================================================================================================================
+ //===================================================================================================================
+procedure TContextHlp.SetBP(Value: TAddr);
+begin
+  {$ifdef Win64} self.Rbp {$else} self.Ebp {$endif} := Value;
+end;
+
+
 { TStackTraceHlp.TFrameInfo }
 
  //===================================================================================================================
@@ -132,8 +190,9 @@ end;
  //===================================================================================================================
 class procedure TStackTraceHlp.InitDbgHelp;
 begin
+  // A process that calls SymInitialize should not call it again unless it calls SymCleanup first.
   if not FInitDone then begin
-	// Needs "symsrv.dll": 'srv*c:\Entwicklung\WindowsSymbols*https://msdl.microsoft.com/download/symbols'
+	// Needs "symsrv.dll": 'srv*c:\WindowsSymbols*https://msdl.microsoft.com/download/symbols'
 	MyAssert(DbgHelp.SymInitialize(FProcess, PChar(SysUtils.ExtractFileDir(self.GetModuleFilename(0))), true));
 	FInitDone := true;
 	DbgHelp.SymSetOptions(SYMOPT_LOAD_LINES or SYMOPT_DEFERRED_LOADS);
@@ -177,45 +236,38 @@ end;
  // Captures the stack for the CPU context <Ctx>. (The stack must still cover the location of <Ctx>.)
  // Does not throw exceptions.
  //===================================================================================================================
-class function TStackTraceHlp.DoGetStackTrace(SkipFrames: integer; Ctx: PCONTEXT): TAddrs;
+class function TStackTraceHlp.DoGetStackTrace(var Ctx: CONTEXT; SkipFrames: uint32; out Addrs: array of TAddr): uint32;
 const
   MachineType = {$ifdef Win64} IMAGE_FILE_MACHINE_AMD64 {$else} IMAGE_FILE_MACHINE_I386 {$endif};
 var
   Frame: STACKFRAME64;
-  cnt: integer;
 begin
   // DbgHelp functions are not thread-safe:
   FLock.AcquireExclusive;
   try
 
-	// A process that calls SymInitialize should not call it again unless it calls SymCleanup first.
 	self.InitDbgHelp;
 
 	ZeroMem(Frame, sizeof(Frame));
 	Frame.AddrPC.Mode    := AddrModeFlat;
 	Frame.AddrFrame.Mode := AddrModeFlat;
 	Frame.AddrStack.Mode := AddrModeFlat;
+	Frame.AddrPC.Offset    := Ctx.IP;
+	Frame.AddrFrame.Offset := Ctx.BP;
+	Frame.AddrStack.Offset := Ctx.SP;
 
-	{$ifdef Win64}
-	Frame.AddrPC.Offset    := Ctx.Rip;
-	Frame.AddrFrame.Offset := Ctx.Rbp;
-	Frame.AddrStack.Offset := Ctx.Rsp;
-	{$else}
-	Frame.AddrPC.Offset    := Ctx.Eip;
-	Frame.AddrFrame.Offset := Ctx.Ebp;
-	Frame.AddrStack.Offset := Ctx.Esp;
-	{$endif}
-
-	Result := nil;
-	cnt := -SkipFrames;
+	Result := 0;
 
 	// ContextRecord: This context may be modified,
-	while DbgHelp.StackWalk64(MachineType, FProcess, FThread, Frame, Ctx^, nil, DbgHelp.SymFunctionTableAccess64, DbgHelp.SymGetModuleBase64, nil) do begin
-	  if cnt >=  0 then begin
-		SetLength(Result, cnt + 1);
-		Result[cnt] := Frame.AddrPC.Offset;
+	while (int32(Result) <= System.High(Addrs))
+	 and DbgHelp.StackWalk64(MachineType, FProcess, FThread, Frame, Ctx, nil, DbgHelp.SymFunctionTableAccess64, DbgHelp.SymGetModuleBase64, nil)
+	do begin
+	  if SkipFrames > 0 then begin
+		dec(SkipFrames);
+		continue;
 	  end;
-	  inc(cnt);
+	  Addrs[Result] := Frame.AddrPC.Offset;
+	  inc(Result);
 	end;
 
   finally
@@ -226,10 +278,10 @@ end;
 
  //===================================================================================================================
  // Provides information on the code address <VirtualAddr> via Windows' built-in mechanisms. The information improves
- // drastically if there are suitable pdb files for the exe and for the DLLs. 
+ // drastically if there are suitable pdb files for the EXE and DLLs.
  // Does not throw exceptions.
  //===================================================================================================================
-class function TStackTraceHlp.ProcessFrame(VirtualAddr: DWORD64): TFrameInfo;
+class function TStackTraceHlp.ProcessFrame(VirtualAddr: TAddr): TFrameInfo;
 const
   MaxSymbolLen = 254;
 var
@@ -286,20 +338,20 @@ end;
  // Returns textual representation of <Addrs>.
  // Does not throw exceptions.
  //===================================================================================================================
-class function TStackTraceHlp.InterpretStackTrace(const Addrs: TAddrs): string;
+class function TStackTraceHlp.InterpretStackTrace(const Addrs: array of TAddr; Count: uint32): string;
 var
-  Addr: DWORD64;
+  i: int32;
 begin
   Result := '';
-  for Addr in Addrs do begin
-	Result := Result + self.ProcessFrame(Addr).ToString;
+  for i := 0 to int32(Count) - 1 do begin
+	Result := Result + self.ProcessFrame(Addrs[i]).ToString;
   end;
 end;
 
 
  //===================================================================================================================
  // Initializes <Ctx> for the current thread. It is particularly important to set EIP / RIP to an address within the
- // body (!) of the calling function. 
+ // body(!) of the calling function.
  //===================================================================================================================
 class procedure TStackTraceHlp.DoSetupContext(var Ctx: CONTEXT);
 asm
@@ -309,7 +361,7 @@ asm
 
   .NOFRAME
   MOV Ctx.ContextFlags, CONTEXT_CONTROL or CONTEXT_INTEGER
-  // for CONTEXT_CONTROL:
+  // für CONTEXT_CONTROL:
   MOV RDX, [RSP]		// top element contains return address
   MOV Ctx.&Rip, RDX
   MOV Ctx.&Rbp, RBP		// unclear if used as it is not part of the x64 calling convention
@@ -322,7 +374,7 @@ asm
   // EAX = @Ctx
 
   MOV Ctx.ContextFlags, CONTEXT_CONTROL
-  // for CONTEXT_CONTROL:
+  // für CONTEXT_CONTROL:
   MOV EDX, [ESP]		// top element contains return address
   MOV Ctx.&Eip, EDX
   MOV Ctx.&Ebp, EBP
@@ -339,19 +391,21 @@ end;
 {$StackFrames on}
 class function TStackTraceHlp.GetStackTrace: string;
 var
-  Ctx: ^CONTEXT;
+  Ctx: DbgHelp.CONTEXT;
+  Addrs: array [0..255] of TAddr;
+  Count: uint32;
 begin
-  Ctx := @gThreadContext;
   Ctx.SetNull;
-  self.DoSetupContext(Ctx^);
-  Result := self.InterpretStackTrace(self.DoGetStackTrace(1, Ctx));
+  self.DoSetupContext(Ctx);
+  Count := self.DoGetStackTrace(Ctx, 1, Addrs);
+  Result := self.InterpretStackTrace(Addrs, Count);
 end;
 {$StackFrames off}
 
 
 type
   // Provides types and methods to hook into the Delphi and Windows exception mechanisms in order to
-  // obtain stack traces of exceptions. 
+  // obtain stack traces of exceptions.
   TExceptionHelp = record
   strict private
 	const
@@ -361,21 +415,45 @@ type
 
 	  PFrames = ^TFrames;
 	  TFrames = record
-		Addrs: TStackTraceHlp.TAddrs;
+		Addrs: array [0..63] of TAddr;
+		Count: uint32;
 	  end;
 
 	class var
 	  FHandlerHandle: pointer;
+	  {$ifdef Win64}
+	  FOriginalRaiseExceptObjProc: procedure(P: PExceptionRecord);
+	  {$endif}
+
+	{$ifdef Win64}
+	class procedure RaiseExceptObject(P: PExceptionRecord); static;
+	{$endif}
+
+	class function OsExceptionHandler(Info: PEXCEPTION_POINTERS): LONG; stdcall; static;
 
 	class function GetExceptionStackInfo(P: PExceptionRecord): pointer; static;
 	class procedure CleanupStackInfo(Info: Pointer); static; static;
 	class function GetStackInfoString(Info: Pointer): string; static;
 
-	class function OsExceptionHandler(Info: PEXCEPTION_POINTERS): LONG; stdcall; static;
+  private
+	type
+	  TOsExceptCtx = record
+		IP: TAddr;
+		SP: TAddr;
+		BP: TAddr;
+		{$ifndef Win64}
+		Stack: TFrames;
+		ValidCtx: boolean;
+		{$endif}
+	  end;
+
   public
 	class procedure Init; static;
 	class procedure Fini; static;
   end;
+
+threadvar
+  gOsExceptCtx: TExceptionHelp.TOsExceptCtx;
 
 
 { TExceptionHelp }
@@ -391,6 +469,11 @@ begin
   // hook into Windows exception handling:
   FHandlerHandle := DbgHelp.AddVectoredExceptionHandler(1, OsExceptionHandler);
   Assert(FHandlerHandle <> nil);
+
+  {$ifdef Win64}
+  FOriginalRaiseExceptObjProc := System.RaiseExceptObjProc;
+  System.RaiseExceptObjProc := @self.RaiseExceptObject;
+  {$endif}
 end;
 
 
@@ -398,86 +481,168 @@ end;
  //===================================================================================================================
 class procedure TExceptionHelp.Fini;
 begin
+  {$ifdef Win64}
+  System.TRaiseExceptObjProc(System.RaiseExceptObjProc) := FOriginalRaiseExceptObjProc;
+  {$endif}
+
   MyAssert(DbgHelp.RemoveVectoredExceptionHandler(FHandlerHandle) <> 0);
 
   SysUtils.Exception.GetExceptionStackInfoProc := nil;
-  // Release should remain possible: SysUtils.Exception.CleanupStackInfoProc 
+  //  Release should remain possible: SysUtils.Exception.CleanupStackInfoProc not cleared
   SysUtils.Exception.GetStackInfoStringProc := nil;
 end;
 
 
+{$ifdef Win64}
+ //===================================================================================================================
+ // Need to work around this bug in System.Exception.RaisingException:
+ //  GetExceptionStackInfoProc is called even when the exception already contains StackInfos from its original creation
+ //  => This destroys the original infos as also leads to a memory leak as CleanupStackInfoProc is not called for the
+ //  overwritten StackInfo pointer.
+ //===================================================================================================================
+class procedure TExceptionHelp.RaiseExceptObject(P: PExceptionRecord);
+begin
+  // Delphi 10.1 + Win64: Prevent memory leak, as also preserve the StackInfo from the original exception, by not
+  // overwriting the already existing StackInfo object in the reraised exception object.
+  if (TObject(P.ExceptObject) is Exception) and (Exception(P.ExceptObject).StackInfo = nil) and Assigned(FOriginalRaiseExceptObjProc) then
+	FOriginalRaiseExceptObjProc(P);
+end;
+{$endif}
+
+
  //===================================================================================================================
  // Is called for every exception in the process and, in the case of Windows-generated exceptions, provides exact
- // information about the point at which the exception occurred. 
+ // information about the point at which the exception occurred.
+ // Is not called again when re-raising an exception.
  // The handler should not call functions that acquire synchronization objects or allocate memory, because this can cause problems.
  //===================================================================================================================
 class function TExceptionHelp.OsExceptionHandler(Info: PEXCEPTION_POINTERS): LONG;
+var
+  Ctx: ^TOsExceptCtx;
 begin
-  if Info.ExceptionRecord.ExceptionCode <> cDelphiException then
-	gThreadContext := Info.ContextRecord^
-  else
-	gThreadContext.ContextFlags := 0;
+  if Info.ExceptionRecord.ExceptionCode <> cDelphiException then begin
+	Ctx := @gOsExceptCtx;
+	Ctx.IP := Info.ContextRecord.IP;
+	Ctx.SP := Info.ContextRecord.SP;
+	Ctx.BP := Info.ContextRecord.BP;
+	{$ifndef Win64}
+	Ctx.ValidCtx := true;
+	{$endif}
+  end;
 
   Result := 0; // EXCEPTION_CONTINUE_SEARCH
 end;
 
 
  //===================================================================================================================
- // Hook for Exception.GetExceptionStackInfoProc: Returns a TFrames record as the result, which the Delphi RTL then
- // stores in the exception. 
- // Is called by the RTL when:
- // - In the case of Delphi's own exceptions ("raise" statement): Before calling the Windows exception mechanism and thus
+ // Hook for Exception.GetExceptionStackInfoProc: Returns a TStack record as the result, which the Delphi RTL then
+ // stores in the exception.
+ // Is called by the RTL:
+ // - For Delphi's own exceptions ("raise" statement): Before calling the Windows exception mechanism and thus
  //   before OsExceptionHandler.
- // - At Windows-Exception (i.e. Div-by-zero): As a reaction to the Windows exception and thus after OsExceptionHandler. 
+ // - For non-Delphi exception (i.e. Div-by-zero): As a reaction to the Windows exception and thus after OsExceptionHandler.
+ // - For reraise ("raise" statement without argument): Without OsExceptionHandler being called.
+ //
+ // Win32: Reraise of Delphi exceptions:
+ // The RTL keeps the exception objec created by the original "raise".
+ //
+ // Win32: Reraise of non-Delphi exceptions:
+ // Idiotically, the RTL releases the original execption objekt and therefore the attached StackInfo (System.pas,
+ //  _RaiseAgain, Zeile 12524), instead of keeping and resuing it!
+ // The CPU stack and gOsExceptCtx are outdated and therefore unusable at this point => We only can reuse the last
+ // stackinfo generated for the address, which is not 100% reliable...
+ //
+ // Win64: Reraise: The original exception *code* is lost due to _RaiseAgain calling _RaiseAtExcept, which handles
+ // reraised non-delphi exceptions the same as Delphi exception. But the original exception object is kept and reused,
+ // so it's stackinfo is still available.
  //===================================================================================================================
-class function TExceptionHelp.GetExceptionStackInfo(P: PExceptionRecord): pointer;
+{$ifdef Win64}
+
+class function TExceptionHelp.GetExceptionStackInfo(p: PExceptionRecord): pointer;
 var
-  Ctx: ^DbgHelp.CONTEXT;
+  OsCtx: ^TOsExceptCtx;
+  Ctx: DbgHelp.CONTEXT;
   SkipFrames: integer;
 begin
-  // gThreadContext is valid if a native Windows exception is handled (Division-by-Zero, Access Violation):
-  Ctx := @gThreadContext;
-  SkipFrames := 0;
-
   if p.ExceptionCode = cDelphiException then begin
-	// Delphi "raise" statement: System._RaiseExcept: Creates the Exception object, before Windows.RaiseException
-	// is called => must construct a suitable Context:
+	// initial handling of a Delphi exception: System._RaiseExcept: Creates the Exception object, before
+	// Windows.RaiseException is called => must construct a suitable Context:
 	Ctx.SetNull;
-	TStackTraceHlp.DoSetupContext(Ctx^);
-	{$ifdef Win64}
+	TStackTraceHlp.DoSetupContext(Ctx);
 	SkipFrames := 5;
-	{$else}
-	SkipFrames := 2;
-(*
-	// System.pas, procedure _RaiseExcept, put the registers of the exception point as 7 arguments into ExceptionInformation:
-	Assert(p.NumberParameters = 7);
-	Ctx.ContextFlags := CONTEXT_CONTROL;
-	Ctx.Eip := DWORD(p.ExceptionAddress);
-	Ctx.Esp := DWORD(p.ExceptionInformation[6]);
-	Ctx.Ebp := DWORD(p.ExceptionInformation[5]);
-*)
-	{$endif}
+  end
+  else begin
+	// initial handling of a non-Delphi exception: OsCtx contains the data captured immediately before:
+	Ctx.SetNull;
+	Ctx.ContextFlags := CONTEXT_CONTROL or CONTEXT_INTEGER;
+	OsCtx := @gOsExceptCtx;
+	Ctx.IP := OsCtx.IP;
+	Ctx.SP := OsCtx.SP;
+	Ctx.BP := OsCtx.BP;
+	SkipFrames := 0;
   end;
 
-  Assert(Ctx.ContextFlags <> 0);
-
-  System.New(PFrames(Result));
-  PFrames(Result).Addrs := TStackTraceHlp.DoGetStackTrace(SkipFrames, Ctx);
-
-  Ctx.ContextFlags := 0;
+  System.GetMem(Result, sizeof(TFrames));
+  PFrames(Result).Count := TStackTraceHlp.DoGetStackTrace(Ctx, SkipFrames, PFrames(Result).Addrs);
 end;
+
+{$else}
+
+class function TExceptionHelp.GetExceptionStackInfo(p: PExceptionRecord): pointer;
+var
+  OsCtx: ^TOsExceptCtx;
+  Ctx: DbgHelp.CONTEXT;
+begin
+  OsCtx := @gOsExceptCtx;
+
+  if p.ExceptionCode = cDelphiException then begin
+	// initial handling of a Delphi exception: System._RaiseExcept: Creates the Exception object, before
+	// Windows.RaiseException is called => must construct a suitable Context:
+	Ctx.SetNull;
+	// System.pas, procedure _RaiseExcept, puts the registers of the exception point as 7 arguments into ExceptionInformation:
+	Assert(p.NumberParameters = 7);
+	Ctx.ContextFlags := CONTEXT_CONTROL;
+	Ctx.IP := DWORD(p.ExceptionAddress);
+	Ctx.SP := DWORD(p.ExceptionInformation[6]);
+	Ctx.BP := DWORD(p.ExceptionInformation[5]);
+  end
+  else if OsCtx.ValidCtx then begin
+	// initial handling of a non-Delphi exception: OsCtx contains the data captured immediately before:
+	Ctx.SetNull;
+	Ctx.ContextFlags := CONTEXT_CONTROL;
+	Ctx.IP := OsCtx.IP;
+	Ctx.SP := OsCtx.SP;
+	Ctx.BP := OsCtx.BP;
+  end
+  else if OsCtx.IP = DWORD_PTR(p.ExceptionAddress) then begin
+	// reraise of a non-Delphi exception: OsCtx does not match the current CPU stack, which no longer covers the original
+	// point of exception => can only reuse the last stackinfo (hopefully still the right one):
+	System.GetMem(Result, sizeof(TFrames));
+	PFrames(Result)^ := OsCtx.Stack;
+	exit;
+  end;
+
+  System.GetMem(Result, sizeof(TFrames));
+  PFrames(Result).Count := TStackTraceHlp.DoGetStackTrace(Ctx, 0, PFrames(Result).Addrs);
+
+  if p.ExceptionCode <> cDelphiException then begin
+	// non-Delphi exception: Context is consumed now, save the generated stackinfo for possible reraise:
+	OsCtx.ValidCtx := false;
+	OsCtx.Stack := PFrames(Result)^;
+  end;
+end;
+{$endif}
 
 
  //===================================================================================================================
- // Hook for Exception.CleanupStackInfoProc: Releases <Info>.
+ // Hook for Exception.CleanupStackInfoProc: Releases  <Info>.
  //===================================================================================================================
 class procedure TExceptionHelp.CleanupStackInfo(Info: Pointer);
 begin
-  // Bug in Delphi 2009, SysUtils.pas, Zeile 17891, DoneExceptions:
-  //   InvalidPointer.*Free* should be *FreeInstance* (as before in OutOfMemory.FreeInstance)
-  // => need to test for nil:
-  if Info <> nil then
-	System.Dispose(PFrames(Info));
+  // Bug since Delphi 2009: SysUtils.pas, Zeile 17891, DoneExceptions:
+  //   InvalidPointer.*Free* müßte *FreeInstance* sein (wie vorher bei OutOfMemory.FreeInstance)
+  // => wird auch für das statische Exception-Objekt InvalidPointer gerufen:
+  System.FreeMem(Info);
 end;
 
 
@@ -486,7 +651,10 @@ end;
  //===================================================================================================================
 class function TExceptionHelp.GetStackInfoString(Info: Pointer): string;
 begin
-  Result := TStackTraceHlp.InterpretStackTrace(PFrames(Info).Addrs);
+  if Info = nil then
+	Result := 'n/a'
+  else
+	Result := TStackTraceHlp.InterpretStackTrace(PFrames(Info).Addrs, PFrames(Info).Count);
 end;
 
 

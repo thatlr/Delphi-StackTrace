@@ -1,12 +1,12 @@
 unit DbgHelp;
 
 {
-  Selection of Windows API types and functions that are needed for stacktraces.
+  Ausschnitt von Windows-API-Typen und -Funktionen, die für Stacktraces benötigt werden.
 
 	DbgHelp.h
 	WinNT.h
 
-  https://docs.microsoft.com/en-us/windows/win32/debug/updated-platform-support?redirectedfrom=MSDN
+  https://docs.microsoft.com/en-us/windows/win32/debug/updated-platform-support
 }
 
 {$include LibOptions.inc}
@@ -21,9 +21,23 @@ uses Windows;
 {$ifend}
 
 type
-  DWORD64 = {$if declared(DWORD64)} Windows.DWORD64 {$else} uint64 {$ifend};
-  ULONG64 = {$if declared(ULONG64)} Windows.ULONG64 {$else} uint64 {$ifend};
-  LONG = {$if declared(LONG)} Windows.LONG {$else} Longint {$ifend};
+  {$if declared(DWORD64)}
+  DWORD64 = Windows.DWORD64;
+  {$else}
+  DWORD64 = uint64;
+  {$ifend}
+
+  {$if declared(ULONG64)}
+  ULONG64 =  Windows.ULONG64;
+  {$else}
+  ULONG64 =  uint64;
+  {$ifend}
+
+  {$if declared(LONG)}
+  LONG = Windows.LONG;
+  {$else}
+  LONG = Longint;
+  {$ifend}
 
 const
   IMAGE_FILE_MACHINE_I386  = Windows.IMAGE_FILE_MACHINE_I386;
