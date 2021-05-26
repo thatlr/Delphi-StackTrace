@@ -71,9 +71,6 @@ uses
   Types,
   SysUtils;
 
-const
-  CrLf = #13#10;
-
 type
   TAddr = TStackTraceHlp.TAddr;
 
@@ -175,9 +172,9 @@ end;
 function TStackTraceHlp.TFrameInfo.ToString: string;
 begin
   if self.SrcLineNo = 0  then
-	Result := SysUtils.Format('  %s%s' + CrLf, [self.ModuleName, self.FuncName])
+	Result := SysUtils.Format('  %s%s', [self.ModuleName, self.FuncName])
   else
-	Result := SysUtils.Format('  %s%s in %s (Line %u)' + CrLf, [self.ModuleName, self.FuncName, self.SrcFilename, self.SrcLineNo]);
+	Result := SysUtils.Format('  %s%s in %s (Line %u)', [self.ModuleName, self.FuncName, self.SrcFilename, self.SrcLineNo]);
 end;
 
 
@@ -292,6 +289,7 @@ var
 	0: (s: DbgHelp.SYMBOL_INFO);
 	1: (b: array [0..sizeof(SYMBOL_INFO) - 2 + MaxSymbolLen * sizeof(WideChar)] of byte);
   end;
+  HaveSymbol: boolean;
   Line: IMAGEHLP_LINE64;
 begin
   Assert(FInitDone);
@@ -307,18 +305,20 @@ begin
   FLock.AcquireExclusive;
   try
 
-	if not DbgHelp.SymFromAddr(FProcess, VirtualAddr, SymOffset, Symbol.s) then begin
+	HaveSymbol := DbgHelp.SymFromAddr(FProcess, VirtualAddr, SymOffset, Symbol.s);
+
+	if not HaveSymbol or (Symbol.s.ModBase = 0) then
+	  Symbol.s.ModBase := DbgHelp.SymGetModuleBase64(FProcess, VirtualAddr);
+
+	if Symbol.s.ModBase <> 0 then
+	  Result.ModuleName := SysUtils.ExtractFilename(self.GetModuleFilename(HINST(Symbol.s.ModBase))) + ': ';
+
+	if not HaveSymbol then begin
 	  Result.FuncName := '0x' + SysUtils.IntToHex(VirtualAddr, 2 * sizeof(pointer));;
 	  exit;
 	end;
 
 	SetString(Result.FuncName, Symbol.s.Name, Symbol.s.NameLen);
-
-	if Symbol.s.ModBase = 0 then
-	  Symbol.s.ModBase := DbgHelp.SymGetModuleBase64(FProcess, VirtualAddr);
-
-	if Symbol.s.ModBase <> 0 then
-	  Result.ModuleName := SysUtils.ExtractFilename(self.GetModuleFilename(HINST(Symbol.s.ModBase))) + ': ';
 
 	ZeroMem(Line, sizeof(Line));
 	Line.SizeOfStruct := sizeof(Line);
@@ -347,6 +347,7 @@ var
 begin
   Result := '';
   for i := 0 to int32(Count) - 1 do begin
+	if i <> 0 then Result := Result + #13#10;
 	Result := Result + self.ProcessFrame(Addrs[i]).ToString;
   end;
 end;
