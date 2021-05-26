@@ -17,6 +17,15 @@ Tested with:
 - Delphi 2009
 - Delphi 10.1.2 Berlin: 32bit and 64bit
 
+To use it:
+- Include the Stacktrace unit, by manually adding it to the top of the uses list in the dpr file.
+- Compile all source files with {$StackFrames on}. It is not strictly required but gives better stacktraces.
+- In the Delphi Project options, under "Linking", set "Map File" to "Detailed".
+- Under "Build Events", "Post-Build", add this command:
+		map2pdb.exe  "$(OUTPUTDIR)\$(PROJECTNAME).map"
+  You may want to use map2pdb with some filters, as the PDBs gets very large, especially on 64bit.
+- Ship the PDB files together with the EXEs and DLLs, by putting them in the same directory.
+
 Please note:
 As the Delphi runtime library handles things not consistently and contains bugs (see some of the comments in the code),
 I don't know if this works with other Delphi versions as well. Please use a memory leak detector to verify the behavior.
