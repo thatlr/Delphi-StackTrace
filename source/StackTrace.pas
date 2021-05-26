@@ -518,7 +518,7 @@ end;
  //
  // Win32: Reraise of non-Delphi exceptions:
  // Idiotically, the RTL releases the original execption objekt and therefore the attached StackInfo (System.pas,
- //  _RaiseAgain, Zeile 12524), instead of keeping and resuing it!
+ //  _RaiseAgain, line 12524), instead of keeping and resuing it!
  // The CPU stack and gOsExceptCtx are outdated and therefore unusable at this point => We only can reuse the last
  // stackinfo generated for the address, which is not 100% reliable...
  //
@@ -620,8 +620,8 @@ end;
  //===================================================================================================================
 class procedure TExceptionHelp.CleanupStackInfo(Info: Pointer);
 begin
-  // Bug since Delphi 2009: SysUtils.pas, Zeile 17891, DoneExceptions:
-  //   InvalidPointer.*Free* müßte *FreeInstance* sein (wie vorher bei OutOfMemory.FreeInstance)
+  // Bug since Delphi 2009: SysUtils.pas, line 17891, DoneExceptions:
+  //   InvalidPointer.*Free* should be *FreeInstance* (as a few lines before with OutOfMemory.FreeInstance)
   // => is also called for the shared "InvalidPointer" object which has no StackInfo
   System.FreeMem(Info);
 end;
