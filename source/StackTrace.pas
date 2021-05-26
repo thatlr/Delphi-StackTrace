@@ -314,6 +314,9 @@ begin
 
 	SetString(Result.FuncName, Symbol.s.Name, Symbol.s.NameLen);
 
+	if Symbol.s.ModBase = 0 then
+	  Symbol.s.ModBase := DbgHelp.SymGetModuleBase64(FProcess, VirtualAddr);
+
 	if Symbol.s.ModBase <> 0 then
 	  Result.ModuleName := SysUtils.ExtractFilename(self.GetModuleFilename(HINST(Symbol.s.ModBase))) + ': ';
 
