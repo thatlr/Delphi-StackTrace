@@ -421,13 +421,6 @@ type
 
 	class var
 	  FHandlerHandle: pointer;
-	  {$ifdef Win64}
-	  FOriginalRaiseExceptObjProc: procedure(P: PExceptionRecord);
-	  {$endif}
-
-	{$ifdef Win64}
-	class procedure RaiseExceptObject(P: PExceptionRecord); static;
-	{$endif}
 
 	class function OsExceptionHandler(Info: PEXCEPTION_POINTERS): LONG; stdcall; static;
 
@@ -469,11 +462,6 @@ begin
   // hook into Windows exception handling:
   FHandlerHandle := DbgHelp.AddVectoredExceptionHandler(1, OsExceptionHandler);
   Assert(FHandlerHandle <> nil);
-
-  {$ifdef Win64}
-  FOriginalRaiseExceptObjProc := System.RaiseExceptObjProc;
-  System.RaiseExceptObjProc := @self.RaiseExceptObject;
-  {$endif}
 end;
 
 
@@ -481,33 +469,12 @@ end;
  //===================================================================================================================
 class procedure TExceptionHelp.Fini;
 begin
-  {$ifdef Win64}
-  System.TRaiseExceptObjProc(System.RaiseExceptObjProc) := FOriginalRaiseExceptObjProc;
-  {$endif}
-
   MyAssert(DbgHelp.RemoveVectoredExceptionHandler(FHandlerHandle) <> 0);
 
   SysUtils.Exception.GetExceptionStackInfoProc := nil;
   //  Release should remain possible: SysUtils.Exception.CleanupStackInfoProc not cleared
   SysUtils.Exception.GetStackInfoStringProc := nil;
 end;
-
-
-{$ifdef Win64}
- //===================================================================================================================
- // Need to work around this bug in System.Exception.RaisingException:
- //  GetExceptionStackInfoProc is called even when the exception already contains StackInfos from its original creation
- //  => This destroys the original infos as also leads to a memory leak as CleanupStackInfoProc is not called for the
- //  overwritten StackInfo pointer.
- //===================================================================================================================
-class procedure TExceptionHelp.RaiseExceptObject(P: PExceptionRecord);
-begin
-  // Delphi 10.1 + Win64: Prevent memory leak, as also preserve the StackInfo from the original exception, by not
-  // overwriting the already existing StackInfo object in the reraised exception object.
-  if (TObject(P.ExceptObject) is Exception) and (Exception(P.ExceptObject).StackInfo = nil) and Assigned(FOriginalRaiseExceptObjProc) then
-	FOriginalRaiseExceptObjProc(P);
-end;
-{$endif}
 
 
  //===================================================================================================================
@@ -564,6 +531,13 @@ var
   Ctx: DbgHelp.CONTEXT;
   SkipFrames: integer;
 begin
+  if TObject(p.ExceptObject) is EAbort then exit(nil);
+
+  // Delphi 10.1 + Win64: Prevent memory leak, as also preserve the StackInfo from the original exception, by not
+  // overwriting an already existing StackInfo object in the reraised exception object.
+  if (TObject(P.ExceptObject) is Exception) and (Exception(P.ExceptObject).StackInfo <> nil) then
+	exit(Exception(P.ExceptObject).StackInfo);
+
   if p.ExceptionCode = cDelphiException then begin
 	// initial handling of a Delphi exception: System._RaiseExcept: Creates the Exception object, before
 	// Windows.RaiseException is called => must construct a suitable Context:
@@ -593,6 +567,8 @@ var
   OsCtx: ^TOsExceptCtx;
   Ctx: DbgHelp.CONTEXT;
 begin
+  if TObject(p.ExceptObject) is EAbort then exit(nil);
+
   OsCtx := @gOsExceptCtx;
 
   if p.ExceptionCode = cDelphiException then begin
@@ -602,9 +578,9 @@ begin
 	// System.pas, procedure _RaiseExcept, puts the registers of the exception point as 7 arguments into ExceptionInformation:
 	Assert(p.NumberParameters = 7);
 	Ctx.ContextFlags := CONTEXT_CONTROL;
-	Ctx.IP := DWORD(p.ExceptionAddress);
-	Ctx.SP := DWORD(p.ExceptionInformation[6]);
-	Ctx.BP := DWORD(p.ExceptionInformation[5]);
+	Ctx.IP := TAddr(p.ExceptionAddress);
+	Ctx.SP := TAddr(p.ExceptionInformation[6]);
+	Ctx.BP := TAddr(p.ExceptionInformation[5]);
   end
   else if OsCtx.ValidCtx then begin
 	// initial handling of a non-Delphi exception: OsCtx contains the data captured immediately before:
@@ -614,13 +590,15 @@ begin
 	Ctx.SP := OsCtx.SP;
 	Ctx.BP := OsCtx.BP;
   end
-  else if OsCtx.IP = DWORD_PTR(p.ExceptionAddress) then begin
+  else if OsCtx.IP = TAddr(p.ExceptionAddress) then begin
 	// reraise of a non-Delphi exception: OsCtx does not match the current CPU stack, which no longer covers the original
 	// point of exception => can only reuse the last stackinfo (hopefully still the right one):
 	System.GetMem(Result, sizeof(TFrames));
 	PFrames(Result)^ := OsCtx.Stack;
 	exit;
-  end;
+  end
+  else
+	exit(nil);
 
   System.GetMem(Result, sizeof(TFrames));
   PFrames(Result).Count := TStackTraceHlp.DoGetStackTrace(Ctx, 0, PFrames(Result).Addrs);
@@ -641,7 +619,7 @@ class procedure TExceptionHelp.CleanupStackInfo(Info: Pointer);
 begin
   // Bug since Delphi 2009: SysUtils.pas, Zeile 17891, DoneExceptions:
   //   InvalidPointer.*Free* müßte *FreeInstance* sein (wie vorher bei OutOfMemory.FreeInstance)
-  // => wird auch für das statische Exception-Objekt InvalidPointer gerufen:
+  // => is also called for the shared "InvalidPointer" object which has no StackInfo
   System.FreeMem(Info);
 end;
 
@@ -663,4 +641,3 @@ initialization
 finalization
   TExceptionHelp.Fini;
 end.
-

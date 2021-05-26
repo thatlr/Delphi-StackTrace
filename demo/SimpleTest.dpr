@@ -3,6 +3,9 @@ program SimpleTest;
 {$include CompilerOptions.inc}
 
 uses
+  WinMemMgr,
+  MemTest,
+  CorrectLocale,
   Windows,
   StdLib,
   SysUtils,
@@ -144,7 +147,8 @@ begin
 (*
   try
 	try
-	  Writeln(1 div GetZero);	// force exception
+	  //Writeln(1 div GetZero);	// force exception
+	  Abort;
 	except
 	  raise;
 	end;
@@ -154,6 +158,7 @@ begin
 	  Writeln(e.StackTrace);
 	end;
   end;
+  exit;
 *)
 
   TestDelpiException;
