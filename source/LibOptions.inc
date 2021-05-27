@@ -12,12 +12,6 @@
   {$RangeChecks off}
 {$endif}
 
-{$if defined(LIB_DEBUG) or defined(DEBUG)}
-  {$StackFrames on}
-{$else}
-  {$StackFrames off}
-{$ifend}
-
 {$ifdef NOASSERT}
   {$Assertions off}
 {$else}
@@ -36,6 +30,7 @@
 {$Optimization on}
 {$ReferenceInfo on}
 {$SafeDivide off}
+{$StackFrames on}
 {$TypedAddress on}
 {$TypeInfo off}
 {$VarStringChecks on}

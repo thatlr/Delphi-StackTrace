@@ -172,9 +172,9 @@ end;
 function TStackTraceHlp.TFrameInfo.ToString: string;
 begin
   if self.SrcLineNo = 0  then
-	Result := SysUtils.Format('  %s%s', [self.ModuleName, self.FuncName])
+	Result := SysUtils.Format('%s%s', [self.ModuleName, self.FuncName])
   else
-	Result := SysUtils.Format('  %s%s in %s (Line %u)', [self.ModuleName, self.FuncName, self.SrcFilename, self.SrcLineNo]);
+	Result := SysUtils.Format('%s%s in %s (Line %u)', [self.ModuleName, self.FuncName, self.SrcFilename, self.SrcLineNo]);
 end;
 
 
@@ -287,7 +287,7 @@ var
   Symbol: record
 	case byte of
 	0: (s: DbgHelp.SYMBOL_INFO);
-	1: (b: array [0..sizeof(SYMBOL_INFO) - 2 + MaxSymbolLen * sizeof(WideChar)] of byte);
+	1: (b: array [0..sizeof(SYMBOL_INFO) - sizeof(char) + MaxSymbolLen * sizeof(char)] of byte);
   end;
   HaveSymbol: boolean;
   Line: IMAGEHLP_LINE64;
@@ -348,7 +348,7 @@ begin
   Result := '';
   for i := 0 to int32(Count) - 1 do begin
 	if i <> 0 then Result := Result + #13#10;
-	Result := Result + self.ProcessFrame(Addrs[i]).ToString;
+	Result := Result + '  at ' + self.ProcessFrame(Addrs[i]).ToString;
   end;
 end;
 
@@ -392,7 +392,6 @@ end;
  //===================================================================================================================
  // For usage by application code, outside of the internal Delphi or Windows exception handling.
  //===================================================================================================================
-{$StackFrames on}
 class function TStackTraceHlp.GetStackTrace: string;
 var
   Ctx: DbgHelp.CONTEXT;
@@ -404,7 +403,6 @@ begin
   Count := self.DoGetStackTrace(Ctx, 1, Addrs);
   Result := self.InterpretStackTrace(Addrs, Count);
 end;
-{$StackFrames off}
 
 
 type
@@ -623,7 +621,7 @@ class procedure TExceptionHelp.CleanupStackInfo(Info: Pointer);
 begin
   // Bug since Delphi 2009: SysUtils.pas, line 17891, DoneExceptions:
   //   InvalidPointer.*Free* should be *FreeInstance* (as a few lines before with OutOfMemory.FreeInstance)
-  // => is also called for the shared "InvalidPointer" object which has no StackInfo
+  // => CleanupStackInfo is also called for the shared "InvalidPointer" object which has no StackInfo
   System.FreeMem(Info);
 end;
 

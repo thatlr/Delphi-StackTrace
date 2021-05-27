@@ -6,10 +6,9 @@ uses
   WinMemMgr,
   MemTest,
   CorrectLocale,
+  Stacktrace,
   Windows,
-  StdLib,
-  SysUtils,
-  Stacktrace;
+  SysUtils;
 
 // IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE = $8000: Terminal server aware
 // IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE = $40: Address Space Layout Randomization (ASLR) enabled
@@ -54,7 +53,7 @@ begin
 	Something;
   except
 	on e: Exception do begin
-	  Writeln(e.Message, ': Exception "', e.ClassName, '" at');
+	  Writeln(e.Message, ': Exception "', e.ClassName, '"');
 	  Writeln(e.StackTrace);
 
 	  try
@@ -75,7 +74,7 @@ begin
 		Something;
 	  except
 		on e: Exception do begin
-		  Writeln(e.Message, ': Exception "', e.ClassName, '" at');
+		  Writeln(e.Message, ': Exception "', e.ClassName, '"');
 		  Writeln(e.StackTrace);
 		end;
 	  end;
@@ -106,7 +105,7 @@ begin
 	Something;
   except
 	on e: Exception do begin
-	  Writeln(e.Message, ': Exception "', e.ClassName, '" at');
+	  Writeln(e.Message, ': Exception "', e.ClassName, '"');
 	  Writeln(e.StackTrace);
 
 	  try
@@ -127,7 +126,7 @@ begin
 		Something;
 	  except
 		on e: Exception do begin
-		  Writeln(e.Message, ': Exception "', e.ClassName, '" at');
+		  Writeln(e.Message, ': Exception "', e.ClassName, '"');
 		  Writeln(e.StackTrace);
 		end;
 	  end;
@@ -154,7 +153,7 @@ begin
 	end;
   except
 	on e: Exception do begin
-	  Writeln(e.Message, ': Exception "', e.ClassName, '" at');
+	  Writeln(e.Message, ': Exception "', e.ClassName, '"');
 	  Writeln(e.StackTrace);
 	end;
   end;
@@ -180,8 +179,6 @@ end;
 
 
 begin
-  StdLib.ExecApp('map2pdb.exe SimpleTest.map', true, true, 5000);
-
   Test1;
 
   Readln;
