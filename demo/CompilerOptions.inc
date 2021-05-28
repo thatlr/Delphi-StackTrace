@@ -7,7 +7,7 @@
 // - Release: RELEASE;NOASSERT
 //
 
-{$ifdef LIB_DEBUG}
+{$ifdef DEBUG}
   {$DebugInfo on}
   {$OverflowChecks on}
   {$RangeChecks on}

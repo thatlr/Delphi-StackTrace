@@ -3,9 +3,6 @@ program SimpleTest;
 {$include CompilerOptions.inc}
 
 uses
-  WinMemMgr,
-  MemTest,
-  CorrectLocale,
   Stacktrace,
   Windows,
   SysUtils;
