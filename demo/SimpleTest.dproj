@@ -1,0 +1,148 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{8455A6EB-8EAC-417E-8814-A061C7E385E4}</ProjectGuid>
+			<MainSource>SimpleTest.dpr</MainSource>
+			<Config Condition="'$(Config)'==''">LibDebug</Config>
+			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+			<ProjectVersion>12.0</ProjectVersion>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Basis' or '$(Base)'!=''">
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_1)'!=''">
+			<Cfg_1>true</Cfg_1>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
+			<Cfg_2>true</Cfg_2>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='LibDebug' or '$(Cfg_3)'!=''">
+			<Cfg_3>true</Cfg_3>
+			<CfgParent>Cfg_2</CfgParent>
+			<Cfg_2>true</Cfg_2>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_ExeOutput>bin</DCC_ExeOutput>
+			<DCC_DcuOutput>dcu</DCC_DcuOutput>
+			<DCC_UnitSearchPath>..\..\lib;..\..\lib\Windows;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+			<DCC_MapFile>3</DCC_MapFile>
+			<DCC_ConsoleTarget>true</DCC_ConsoleTarget>
+			<DCC_DUPLICATE_CTOR_DTOR>false</DCC_DUPLICATE_CTOR_DTOR>
+			<DCC_DependencyCheckOutputName>bin\SimpleTest.exe</DCC_DependencyCheckOutputName>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_1)'!=''">
+			<DCC_Define>RELEASE;NOASSERT;$(DCC_Define)</DCC_Define>
+			<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+			<DCC_AssertionsAtRuntime>false</DCC_AssertionsAtRuntime>
+			<DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+			<DCC_DebugInformation>false</DCC_DebugInformation>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_2)'!=''">
+			<DCC_Define>DEBUG;MEMTEST_ACTIVE;$(DCC_Define)</DCC_Define>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_3)'!=''">
+			<DCC_Define>LIB_DEBUG;$(DCC_Define)</DCC_Define>
+		</PropertyGroup>
+		<ItemGroup>
+			<DelphiCompile Include="SimpleTest.dpr">
+				<MainSource>MainSource</MainSource>
+			</DelphiCompile>
+			<BuildConfiguration Include="Basis">
+				<Key>Base</Key>
+			</BuildConfiguration>
+			<BuildConfiguration Include="LibDebug">
+				<Key>Cfg_3</Key>
+				<CfgParent>Cfg_2</CfgParent>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Release">
+				<Key>Cfg_1</Key>
+				<CfgParent>Base</CfgParent>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Debug">
+				<Key>Cfg_2</Key>
+				<CfgParent>Base</CfgParent>
+			</BuildConfiguration>
+		</ItemGroup>
+		<Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+		<PropertyGroup>
+			<PostBuildEvent><![CDATA[map2pdb  "-include:0001;0002"  "$(OUTPUTDIR)\$(OUTPUTNAME).map"]]></PostBuildEvent>
+		</PropertyGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
+			<Borland.ProjectType>VCLApplication</Borland.ProjectType>
+			<BorlandProject>
+				<Delphi.Personality>
+					<Source>
+						<Source Name="MainSource">SimpleTest.dpr</Source>
+					</Source>
+					<Parameters>
+						<Parameters Name="UseLauncher">False</Parameters>
+						<Parameters Name="LoadAllSymbols">True</Parameters>
+						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+					</Parameters>
+					<VersionInfo>
+						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
+						<VersionInfo Name="AutoIncBuild">False</VersionInfo>
+						<VersionInfo Name="MajorVer">1</VersionInfo>
+						<VersionInfo Name="MinorVer">0</VersionInfo>
+						<VersionInfo Name="Release">0</VersionInfo>
+						<VersionInfo Name="Build">0</VersionInfo>
+						<VersionInfo Name="Debug">False</VersionInfo>
+						<VersionInfo Name="PreRelease">False</VersionInfo>
+						<VersionInfo Name="Special">False</VersionInfo>
+						<VersionInfo Name="Private">False</VersionInfo>
+						<VersionInfo Name="DLL">False</VersionInfo>
+						<VersionInfo Name="Locale">1033</VersionInfo>
+						<VersionInfo Name="CodePage">1252</VersionInfo>
+					</VersionInfo>
+					<VersionInfoKeys>
+						<VersionInfoKeys Name="CompanyName"/>
+						<VersionInfoKeys Name="FileDescription"/>
+						<VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
+						<VersionInfoKeys Name="InternalName"/>
+						<VersionInfoKeys Name="LegalCopyright"/>
+						<VersionInfoKeys Name="LegalTrademarks"/>
+						<VersionInfoKeys Name="OriginalFilename"/>
+						<VersionInfoKeys Name="ProductName"/>
+						<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+						<VersionInfoKeys Name="Comments"/>
+					</VersionInfoKeys>
+					<Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\RaveReports\Lib\dclRave.bpl">Rave Reports 7.6 BE Package</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclstd120.bpl">CodeGear Standardkomponenten</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclact120.bpl">CodeGear ActionBar-Komponenten</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dcltee8120.bpl">TeeChart Standard 8 Components</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\Bin\dclIndyCore120.bpl">Indy 10 Core Design Time</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\Bin\dclIndyProtocols120.bpl">Indy 10 Protocols Design Time</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclie120.bpl">Internet Explorer-Komponenten</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclnet120.bpl">CodeGear Internet-Komponenten</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclsoap120.bpl">CodeGear SOAP-Komponenten</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclribbon120.bpl">CodeGear Ribbon-Steuerelemente</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\applet120.bpl">CodeGear Control Panel Applet-Package</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dcl31w120.bpl">Delphi 1.0 Kompatibilitätskomponenten</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclbde120.bpl">CodeGear BDE DB-Komponenten</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\Bin\dcldb120.bpl">CodeGear Datenbankkomponenten</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\Bin\dbx120.bpl">CodeGear SQL Explorer UI-Package</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclemacsedit120.bpl">CodeGear Editor Emacs-Erweiterungen</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclmlwiz120.bpl">CodeGear Markup Language-Experten</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclsmpedit120.bpl">CodeGear Editor Script-Erweiterungen</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclmcn120.bpl">CodeGear DataSnap Verbindungskomponenten</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\Bin\dclmid120.bpl">CodeGear MyBase Datenzugriffskomponenten</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclado120.bpl">CodeGear ADO DB-Komponenten</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclwebsnap120.bpl">CodeGear WebSnap-Komponenten</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\Bin\dclwbm120.bpl">CodeGear InternetExpress-Komponenten</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclDBXDrivers120.bpl">CodeGear-Treiberkomponenten</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dcldbx120.bpl">CodeGear dbExpress-Komponenten</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dcldbxcds120.bpl">CodeGear SimpleDataset-Komponente (DBX)</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dcloffice2k120.bpl">Microsoft Office 2000 Beispiele für gekapselte Komponenten für Automation Server</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclofficexp120.bpl">Microsoft Office XP Beispiele für gekapselte Komponenten für Automation Server</Excluded_Packages>
+					</Excluded_Packages>
+				</Delphi.Personality>
+			</BorlandProject>
+			<ProjectFileVersion>12</ProjectFileVersion>
+		</ProjectExtensions>
+	</Project>

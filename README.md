@@ -40,9 +40,3 @@ stackinfo from the original object which is now gone. It is not possible to recr
 very last stackinfo, but depending on other exceptions thrown and catched between the original point and the reraise point,
 it may be no longer the correct one.
 
-
-Open issue:
-
-When a DLL get unloaded, it's address space may get reused by other DLls loaded thereafter. So the symbol cache maintained by
-DbgHelp needs to be invalided somehow on DLL unloading. But there is no clean way to get notifications from Windows when a
-DLL is unloaded (besides LdrRegisterDllNotification which is marked "deprecated" by Microsoft).

@@ -2,7 +2,14 @@ program SimpleTest;
 
 {$include CompilerOptions.inc}
 
+{$AppType Console}
+
+{$R *.res}
+
 uses
+  WinMemMgr,
+  MemTest,
+  CorrectLocale,
   Stacktrace,
   Windows,
   SysUtils;
@@ -139,26 +146,20 @@ end;
  //===================================================================================================================
  //===================================================================================================================
 procedure Test2;
+var
+  hMod: HMODULE;
 begin
-(*
-  try
-	try
-	  //Writeln(1 div GetZero);	// force exception
-	  Abort;
-	except
-	  raise;
-	end;
-  except
-	on e: Exception do begin
-	  Writeln(e.Message, ': Exception "', e.ClassName, '"');
-	  Writeln(e.StackTrace);
-	end;
-  end;
-  exit;
-*)
-
   TestDelpiException;
+
   Writeln('~~~~~~~~~~~~');
+
+  // verifying DLL unload detection: load and unload a DLL *not* currently loaded by the process:
+  hMod := Windows.LoadLibrary('hid.dll');
+  Assert(hMod <> 0);
+  Windows.FreeLibrary(hMod);
+
+  Writeln('~~~~~~~~~~~~');
+
   TestOsException;
 end;
 

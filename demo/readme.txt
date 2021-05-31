@@ -1,0 +1,2 @@
+- This is a Delphi 2009 project.
+- You need to adjust the unit search path for your directory structure.
