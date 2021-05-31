@@ -665,6 +665,39 @@ function RemoveVectoredExceptionHandler(
   ): ULONG; stdcall; external Windows.Kernel32 name 'RemoveVectoredExceptionHandler';
 
 
+type
+  // winternl.h:
+  NTSTATUS = LONG;
+
+const
+  // ntstatus.h:
+  STATUS_SUCCESS = NTSTATUS(0);
+
+  // https://docs.microsoft.com/en-us/windows/win32/devnotes/ldrdllnotification
+  LDR_DLL_NOTIFICATION_REASON_LOADED   = 1;
+  LDR_DLL_NOTIFICATION_REASON_UNLOADED = 2;
+
+type
+  // no Windows header file [This function may be changed or removed from Windows without further notice.]
+  PLDR_DLL_NOTIFICATION_FUNCTION = procedure(
+	NotificationReason: ULONG;
+	NotificationData: pointer; // PCLDR_DLL_NOTIFICATION_DATA;
+	Context: pointer
+  ); stdcall;
+
+  // no Windows header file [This function may be changed or removed from Windows without further notice.]
+  TLdrRegisterDllNotification = function(
+	Flags: ULONG;
+	NotificationFunction: PLDR_DLL_NOTIFICATION_FUNCTION;
+	Context: pointer;
+	out Cookie: pointer
+  ): NTSTATUS; stdcall;
+
+  // no Windows header file [This function may be changed or removed from Windows without further notice.]
+  TLdrUnregisterDllNotification = function(
+	Cookie: pointer
+  ): NTSTATUS; stdcall;
+
 
 implementation
 
