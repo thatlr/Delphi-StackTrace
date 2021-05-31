@@ -7,9 +7,9 @@ program SimpleTest;
 {$R *.res}
 
 uses
-  WinMemMgr,
-  MemTest,
-  CorrectLocale,
+  //WinMemMgr,
+  //MemTest,
+  //CorrectLocale,
   Stacktrace,
   Windows,
   SysUtils;
