@@ -649,6 +649,11 @@ var
 begin
   if TObject(p.ExceptObject) is EAbort then exit(nil);
 
+  // case "raise System.AcquireExceptionObject": Prevent memory leak, as also preserve the StackInfo from the original
+  // exception, by not overwriting an already existing StackInfo object in the reraised exception object.
+  if (TObject(P.ExceptObject) is Exception) and (Exception(P.ExceptObject).StackInfo <> nil) then
+	exit(Exception(P.ExceptObject).StackInfo);
+
   OsCtx := @gOsExceptCtx;
 
   if p.ExceptionCode = cDelphiException then begin
