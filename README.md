@@ -38,5 +38,5 @@ The 32bit compiler and RTL makes it nearly impossible to get the stacktrace from
 For some reason, the original exception object is released by the RTL and then a new one is created, but we still need the
 stackinfo from the original object which is now gone. It is not possible to recreate it. So for now, I just reattach the
 very last stackinfo, but depending on other exceptions thrown and catched between the original point and the reraise point,
-it may be no longer the correct one.
-
+it may be no longer the correct one. But: When AcquireExceptionObject is used, reraising works also in 32bit for every type
+of exception.
