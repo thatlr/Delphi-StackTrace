@@ -42,6 +42,8 @@ end;
  //===================================================================================================================
  //===================================================================================================================
 procedure TestDelpiException;
+var
+  AcquiredException: TObject;
 begin
   Something;
   try
@@ -65,11 +67,24 @@ begin
 
 		try
 		  Something;
+
 		  try
-			raise Exception.Create('Exception #2');
+
+			try
+			  raise Exception.Create('Exception #2');
+			except
+			  // test situation when AcquireExceptionObject is used:
+			  AcquiredException := System.AcquireExceptionObject;
+			end;
+
+			Something;
+			// reraise the catched exception:
+			raise AcquiredException;
+
 		  finally
 			Something;
 		  end;
+
 		  Something;
 		except
 		  raise;
@@ -94,6 +109,8 @@ end;
  //===================================================================================================================
  //===================================================================================================================
 procedure TestOsException;
+var
+  AcquiredException: TObject;
 begin
   Something;
   try
@@ -117,11 +134,26 @@ begin
 
 		try
 		  Something;
+
 		  try
-			Writeln(1 div GetZero);	// force exception
+			// Compiler cannot know that the division always throws an exception:
+			AcquiredException := nil;
+
+			try
+			  Writeln(1 div GetZero);	// force exception
+			except
+			  // test situation when AcquireExceptionObject is used:
+			  AcquiredException := System.AcquireExceptionObject;
+			end;
+
+			Something;
+			// reraise the catched exception:
+			raise AcquiredException;
+
 		  finally
 			Something;
 		  end;
+
 		  Something;
 		except
 		  raise;
