@@ -441,7 +441,7 @@ asm
 
   .NOFRAME
   MOV Ctx.ContextFlags, CONTEXT_CONTROL or CONTEXT_INTEGER
-  // für CONTEXT_CONTROL:
+  // for CONTEXT_CONTROL:
   MOV RDX, [RSP]		// top element contains return address
   MOV Ctx.&Rip, RDX
   MOV Ctx.&Rbp, RBP		// unclear if used as it is not part of the x64 calling convention
@@ -454,7 +454,7 @@ asm
   // EAX = @Ctx
 
   MOV Ctx.ContextFlags, CONTEXT_CONTROL
-  // für CONTEXT_CONTROL:
+  // for CONTEXT_CONTROL:
   MOV EDX, [ESP]		// top element contains return address
   MOV Ctx.&Eip, EDX
   MOV Ctx.&Ebp, EBP
@@ -594,7 +594,7 @@ end;
  // The RTL keeps the exception objec created by the original "raise".
  //
  // Win32: Reraise of non-Delphi exceptions:
- // Idiotically, the RTL releases the original execption objekt and therefore the attached StackInfo (System.pas,
+ // Idiotically, the RTL releases the original execption object and therefore the attached StackInfo (System.pas,
  //  _RaiseAgain, line 12524), instead of keeping and resuing it!
  // The CPU stack and gOsExceptCtx are outdated and therefore unusable at this point => We only can reuse the last
  // stackinfo generated for the address, which is not 100% reliable...
@@ -611,15 +611,17 @@ var
   Ctx: DbgHelp.CONTEXT;
   SkipFrames: integer;
 begin
-  if TObject(p.ExceptObject) is EAbort then exit(nil);
-
-  // Delphi 10.1 + Win64: Prevent memory leak, as also preserve the StackInfo from the original exception, by not
-  // overwriting an already existing StackInfo object in the reraised exception object.
-  if (TObject(P.ExceptObject) is Exception) and (Exception(P.ExceptObject).StackInfo <> nil) then
-	exit(Exception(P.ExceptObject).StackInfo);
-
   if p.ExceptionCode = cDelphiException then begin
-	// initial handling of a Delphi exception: System._RaiseExcept: Creates the Exception object, before
+	// p.ExceptObject is only valid for Delphi exceptions (can be non-nil for EAccessViolation without pointing to an Delphi object)
+
+	if TObject(p.ExceptObject) is EAbort then exit(nil);
+
+	// Delphi 10.1 + Win64: Prevent memory leak, as also preserve the StackInfo from the original exception, by not
+	// overwriting an already existing StackInfo object in the reraised exception object.
+	if (TObject(P.ExceptObject) is Exception) and (Exception(P.ExceptObject).StackInfo <> nil) then
+	  exit(Exception(P.ExceptObject).StackInfo);
+
+	// initial handling of a Delphi exception: System._RaiseExcept: Creates the Exception object before
 	// Windows.RaiseException is called => must construct a suitable Context:
 	Ctx.SetNull;
 	TStackTraceHlp.DoSetupContext(Ctx);
@@ -647,17 +649,19 @@ var
   OsCtx: ^TOsExceptCtx;
   Ctx: DbgHelp.CONTEXT;
 begin
-  if TObject(p.ExceptObject) is EAbort then exit(nil);
-
-  // case "raise System.AcquireExceptionObject": Prevent memory leak, as also preserve the StackInfo from the original
-  // exception, by not overwriting an already existing StackInfo object in the reraised exception object.
-  if (TObject(P.ExceptObject) is Exception) and (Exception(P.ExceptObject).StackInfo <> nil) then
-	exit(Exception(P.ExceptObject).StackInfo);
-
   OsCtx := @gOsExceptCtx;
 
   if p.ExceptionCode = cDelphiException then begin
-	// initial handling of a Delphi exception: System._RaiseExcept: Creates the Exception object, before
+	// p.ExceptObject is only valid for Delphi exceptions (can be non-nil for EAccessViolation without pointing to an Delphi object)
+
+	if TObject(p.ExceptObject) is EAbort then exit(nil);
+
+	// case "raise System.AcquireExceptionObject": Prevent memory leak, as also preserve the StackInfo from the original
+	// exception, by not overwriting an already existing StackInfo object in the reraised exception object.
+	if (TObject(P.ExceptObject) is Exception) and (Exception(P.ExceptObject).StackInfo <> nil) then
+	  exit(Exception(P.ExceptObject).StackInfo);
+
+	// initial handling of a Delphi exception: System._RaiseExcept: Creates the Exception object before
 	// Windows.RaiseException is called => must construct a suitable Context:
 	Ctx.SetNull;
 	// System.pas, procedure _RaiseExcept, puts the registers of the exception point as 7 arguments into ExceptionInformation:
@@ -715,7 +719,7 @@ end;
 class function TExceptionHelp.GetStackInfoString(Info: Pointer): string;
 begin
   if Info = nil then
-	Result := 'n/a'
+	Result := ''
   else
 	Result := TStackTraceHlp.InterpretStackTrace(PFrames(Info).Addrs, PFrames(Info).Count);
 end;

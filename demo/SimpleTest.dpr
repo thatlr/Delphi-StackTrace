@@ -33,28 +33,22 @@ end;
 
  //===================================================================================================================
  //===================================================================================================================
-function GetZero: integer;
-begin
-  Result := 0;
-end;
-
-
- //===================================================================================================================
- //===================================================================================================================
 procedure TestDelpiException;
 var
   AcquiredException: TObject;
 begin
   Something;
   try
-	Writeln('TestDelpiException #1:');
-	Writeln(TStackTraceHlp.GetStackTrace);
 
 	try
-	  raise Exception.Create('Exception #1');
-	finally
-	  Something;
-	end;
+	  try
+		raise Exception.Create('Exception #1');
+	  finally
+		Something;
+	  end;
+	except
+	  raise;
+    end;
 
 	Something;
   except
@@ -98,8 +92,6 @@ begin
 		end;
 	  end;
 
-	  Writeln('TestDelpiException #2:');
-	  Writeln(TStackTraceHlp.GetStackTrace);
 	end;
   end;
   Something;
@@ -109,19 +101,27 @@ end;
  //===================================================================================================================
  //===================================================================================================================
 procedure TestOsException;
+
+  function _GetZero: integer;
+  begin
+	Result := 0;
+  end;
+
 var
   AcquiredException: TObject;
 begin
   Something;
   try
-	Writeln('TestOsException #1:');
-	Writeln(TStackTraceHlp.GetStackTrace);
 
 	try
-	  Writeln(1 div GetZero);	// force exception
-	finally
-	  Something;
-	end;
+	  try
+		Writeln(1 div _GetZero);	// force exception
+	  finally
+		Something;
+	  end;
+	except
+	  raise;
+    end;
 
 	Something;
   except
@@ -140,7 +140,7 @@ begin
 			AcquiredException := nil;
 
 			try
-			  Writeln(1 div GetZero);	// force exception
+			  Writeln(1 div _GetZero);	// force exception
 			except
 			  // test situation when AcquireExceptionObject is used:
 			  AcquiredException := System.AcquireExceptionObject;
@@ -167,8 +167,75 @@ begin
 		end;
 	  end;
 
-	  Writeln('TestOsException #2:');
-	  Writeln(TStackTraceHlp.GetStackTrace);
+	end;
+  end;
+  Something;
+end;
+
+
+ //===================================================================================================================
+ //===================================================================================================================
+procedure TestEAccessViolation;
+var
+  AcquiredException: TObject;
+begin
+  Something;
+  try
+
+	try
+	  try
+		PByte(nil)[20] := 0;	// force exception
+	  finally
+		Something;
+	  end;
+	except
+	  raise;
+    end;
+
+	Something;
+  except
+	on e: Exception do begin
+	  Writeln(e.Message, ': Exception "', e.ClassName, '"');
+	  Writeln(e.StackTrace);
+
+	  try
+		Something;
+
+		try
+		  Something;
+
+		  try
+			// Compiler cannot know that the division always throws an exception:
+			AcquiredException := nil;
+
+			try
+			  PByte(nil)[20] := 0;	// force exception
+			except
+			  // test situation when AcquireExceptionObject is used:
+			  AcquiredException := System.AcquireExceptionObject;
+			end;
+
+			Something;
+			// reraise the catched exception:
+			raise AcquiredException;
+
+		  finally
+			Something;
+		  end;
+
+		  Something;
+		except
+		  raise;
+		end;
+
+		Something;
+	  except
+		on e: Exception do begin
+		  Writeln(e.Message, ': Exception "', e.ClassName, '"');
+		  Writeln(e.StackTrace);
+		end;
+	  end;
+
 	end;
   end;
   Something;
@@ -181,6 +248,7 @@ procedure Test2;
 var
   hMod: HMODULE;
 begin
+
   TestDelpiException;
 
   Writeln('~~~~~~~~~~~~');
@@ -190,9 +258,16 @@ begin
   Assert(hMod <> 0);
   Windows.FreeLibrary(hMod);
 
+  TestOsException;
+
   Writeln('~~~~~~~~~~~~');
 
-  TestOsException;
+  // verifying DLL unload detection: load and unload a DLL *not* currently loaded by the process:
+  hMod := Windows.LoadLibrary('hid.dll');
+  Assert(hMod <> 0);
+  Windows.FreeLibrary(hMod);
+
+  TestEAccessViolation;
 end;
 
 
@@ -201,6 +276,9 @@ end;
 procedure Test1;
 begin
   try
+	Writeln('Stacktrace without exception:');
+	Writeln(TStackTraceHlp.GetStackTrace);
+
 	Test2;
   finally
 //	Test2;
