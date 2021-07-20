@@ -390,7 +390,7 @@ begin
 	  Result.ModuleName := SysUtils.ExtractFilename(self.GetModuleFilename(HINST(Symbol.s.ModBase))) + ': ';
 
 	if not HaveSymbol then begin
-	  Result.FuncName := '0x' + SysUtils.IntToHex(VirtualAddr, 2 * sizeof(pointer));;
+	  Result.FuncName := '0x' + SysUtils.IntToHex(VirtualAddr, 2 * sizeof(pointer));
 	  exit;
 	end;
 
@@ -609,7 +609,7 @@ class function TExceptionHelp.GetExceptionStackInfo(p: PExceptionRecord): pointe
 var
   OsCtx: ^TOsExceptCtx;
   Ctx: DbgHelp.CONTEXT;
-  SkipFrames: integer;
+  SkipFrames: uint32;
 begin
   if p.ExceptionCode = cDelphiException then begin
 	// p.ExceptObject is only valid for Delphi exceptions (can be non-nil for EAccessViolation without pointing to an Delphi object)
