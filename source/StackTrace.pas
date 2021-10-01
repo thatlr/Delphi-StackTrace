@@ -42,7 +42,6 @@ type
   TStackTraceHlp = record
   private
 	type
-	  PAddr = ^TAddr;
 	  TAddr = DWORD_PTR;
   strict private
 	type
@@ -69,7 +68,7 @@ type
 	  FDoReinit: boolean;		// set to true when a DLL was unloaded
 
 	class procedure InitSyms; static;
-	class function ProcessFrame(VirtualAddr: TAddr): TFrameInfo; static;
+	class function ProcessFrame(VirtualAddr: DWORD64): TFrameInfo; static;
 	class function GetModuleFilename(hModule: HINST): string; static;
 
 	class function GetFuncPtr(FuncName: PAnsiChar): pointer; static;
@@ -354,7 +353,7 @@ end;
  // drastically if there are suitable pdb files for the EXE and DLLs.
  // Does not throw exceptions.
  //===================================================================================================================
-class function TStackTraceHlp.ProcessFrame(VirtualAddr: TAddr): TFrameInfo;
+class function TStackTraceHlp.ProcessFrame(VirtualAddr: DWORD64): TFrameInfo;
 const
   MaxSymbolLen = 254;
 var
