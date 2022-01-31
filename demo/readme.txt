@@ -1,2 +1,3 @@
 - This is a Delphi 2009 project.
 - You need to adjust the unit search path for your directory structure.
+- The output files are produced with the "Use debug .dcus" compiler setting.
