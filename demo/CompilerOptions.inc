@@ -8,11 +8,9 @@
 //
 
 {$ifdef DEBUG}
-  {$DebugInfo on}
   {$OverflowChecks on}
   {$RangeChecks on}
 {$else}
-  {$DebugInfo off}
   {$OverflowChecks off}
   {$RangeChecks off}
 {$endif}
@@ -25,6 +23,7 @@
 
 {$Align on}
 {$BoolEval off}
+{$DebugInfo on}
 {$ExtendedSyntax on}
 {$Hints on}
 {$IoChecks on}

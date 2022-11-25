@@ -1,7 +1,7 @@
 //
 // see: http://docwiki.embarcadero.com/RADStudio/en/Compiler_Versions
 //
-// http://docwiki.embarcadero.com/RADStudio/Sydney/de/Compiler-Versionen
+// https://docwiki.embarcadero.com/RADStudio/Alexandria/en/Compiler_Versions
 
 {$undef Delphi2}
 {$undef Delphi3}
@@ -29,6 +29,7 @@
 {$undef Delphi102}
 {$undef Delphi103}
 {$undef Delphi104}
+{$undef Delphi11}
 
 // D2: VER90
 // D3: VER100
@@ -383,3 +384,35 @@
   {$define Delphi103}
   {$define Delphi104}
 {$endif}
+
+// D11.0 Alexandria
+{$ifdef VER350}
+  {$define Delphi2}
+  {$define Delphi3}
+  {$define Delphi4}
+  {$define Delphi5}
+  {$define Delphi6}
+  {$define Delphi7}
+  {$define Delphi8}
+  {$define D2005}
+  {$define D2006}
+  {$define D2007}
+  {$define D2009}
+  {$define D2010}
+  {$define D2011}
+  {$define DelphiXE}
+  {$define DelphiXE2}
+  {$define DelphiXE3}
+  {$define DelphiXE4}
+  {$define DelphiXE5}
+  {$define DelphiXE6}
+  {$define DelphiXE7}
+  {$define DelphiXE8}
+  {$define Delphi10}
+  {$define Delphi101}
+  {$define Delphi102}
+  {$define Delphi103}
+  {$define Delphi104}
+  {$define Delphi11}
+{$endif}
+
