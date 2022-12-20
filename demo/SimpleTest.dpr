@@ -365,6 +365,25 @@ end;
 
 
  //===================================================================================================================
+ //===================================================================================================================
+function EnumWindowsCallback(hwnd: HWND; lParam: LPARAM): BOOL; stdcall;
+begin
+  Writeln('Callstack from inside EnumWindows:');
+  Writeln(TStackTraceHlp.GetStackTrace);
+  Result := false;
+end;
+
+
+ //===================================================================================================================
+ // Testing stack trace with full Windows DLL symbols, by capturing a call stack inside a Windows callback.
+ //===================================================================================================================
+procedure TestCallStackFromWithinWindowsCallback;
+begin
+  Windows.EnumWindows(@EnumWindowsCallback, 0);
+end;
+
+
+ //===================================================================================================================
  // Verifying DLL unload detection in Stacktrace.pas: Load and unload a DLL *not* currently loaded by the process.
  //===================================================================================================================
 procedure LoadAndUnloadSomeDLL;
@@ -382,6 +401,9 @@ end;
  //===================================================================================================================
 procedure Main;
 begin
+  //TStackTraceHlp.SymSearchPath := 'srv*c:\temp\symbols*https://msdl.microsoft.com/download/symbols';
+  //TStackTraceHlp.EnableDebugOutput := true;
+
   SetLang;
 
   Writeln('Stacktrace without exception:');
@@ -406,6 +428,10 @@ begin
   Writeln('~~~~~~~~~~~~');
 
   TestSafecallException;
+
+  Writeln('~~~~~~~~~~~~');
+
+  TestCallStackFromWithinWindowsCallback;
 
   Write('Finished (press ENTER).');
   Readln;

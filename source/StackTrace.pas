@@ -8,6 +8,7 @@ unit StackTrace;
   Anders Melander's map2pdb.exe can be used for this:
 	https://bitbucket.org/anders_melander/map2pdb/src/master/
 
+
   Notes:
 
   As the Delphi runtime library handles things not consistently and contains bugs (see some of the comments in the code),
@@ -24,6 +25,28 @@ unit StackTrace;
 
   To get notifications on DLL unloading, the Windows function LdrRegisterDllNotification is used, which  may change on
   later Windows releases (unlikely). But there is no alternative.
+
+
+  Enable lookup of Windows symbols:
+
+  The standard dbghelp.dll that comes with Windows does not support downloading symbol servers. To enable this, you need
+  two DLLs from the "Windows Debugging Tools":
+	https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/debugger-download-tools
+
+  Both "dbghelp.dll" and "symsrv.dll" from
+	"C:\Program Files (x86)\Windows Kits\10\Debuggers\x86" (32 bit)
+  or
+	"C:\Program Files (x86)\Windows Kits\10\Debuggers\x64" (64 bit)
+  needs to be copied into the same folder as the Delphi executable.
+
+  To have the Windows symbols be used, the symbol search path needs to be altered, like this:
+	TStackTraceHlp.SymSearchPath := 'srv*c:\temp\symbols*https://msdl.microsoft.com/download/symbols';
+
+  "c:\temp\symbols" inside this example string specifies a folder that is used as a cache for the downloaded PDBs (see
+  https://learn.microsoft.com/en-us/windows/win32/debug/symbol-paths).
+
+  As the download takes time, and the cache folder needs to be there, this is usually not an option for
+  production environments.
 }
 
 {$include LibOptions.inc}
@@ -66,10 +89,13 @@ type
 	  FHandlerCookie: pointer;	// LdrRegisterDllNotification handle
 	  FInitDone: boolean;		// state of DbgHelp regarding SymInitialize
 	  FDoReinit: boolean;		// set to true when a DLL was unloaded
+	  FSymSearchPath: string;	// additional locations to lookup PDB files
+	  FEnableDebugOutput: boolean;	// controls debug output from dbghelp.dll
 
 	class procedure InitSyms; static;
 	class function ProcessFrame(VirtualAddr: DWORD64): TFrameInfo; static;
 	class function GetModuleFilename(hModule: HINST): string; static;
+	class procedure SetSymSearchPath(const Value: string); static;
 
 	class function GetFuncPtr(FuncName: PAnsiChar): pointer; static;
 	class procedure OsDllNotification(Reason: ULONG; Data: pointer; Context: pointer); stdcall; static;
@@ -81,6 +107,10 @@ type
 	class function DoGetStackTrace(var Ctx: CONTEXT; SkipFrames: uint32; out Addrs: array of TAddr): uint32; static;
 	class function InterpretStackTrace(const Addrs: array of TAddr; Count: uint32): string; static;
   public
+	// for the syntax, see: https://learn.microsoft.com/en-us/windows/win32/debug/symbol-paths
+	class property SymSearchPath: string read FSymSearchPath write SetSymSearchPath;
+	class property EnableDebugOutput: boolean read FEnableDebugOutput write FEnableDebugOutput;
+
 	class function GetStackTrace: string; static;
   end;
 
@@ -231,24 +261,50 @@ end;
 
 
  //===================================================================================================================
+ // Setter for property "SymSearchPath".
+ //===================================================================================================================
+class procedure TStackTraceHlp.SetSymSearchPath(const Value: string);
+begin
+  FSymSearchPath := Value;
+  FDoReinit := true;
+end;
+
+
+ //===================================================================================================================
  // Initializes the DbgHelp DLL for this process.
  // Must run in lock, as DbgHelp functions are not thread-safe.
  // Does not throw exceptions.
  //===================================================================================================================
 class procedure TStackTraceHlp.InitSyms;
+var
+  SearchPath: string;
+  SymOptions: DWORD;
 begin
   // address space of an unloaded DLL may be reused (e.g. dynamic plug-ins) => reinitialize DbgHelp's symbol cache:
   if FDoReinit then begin
 	FDoReinit := false;
 	self.FiniSyms;
+	// Note: Calling DbgHelp.SymRefreshModuleList(FProcess) takes much longer than simply reinitializing everything,
+	// even at the 2nd call in the same process, as it downloads Windows symbols for a lot of Windows DLLs.
+	// This is suprising as SymInitialize() with Invade=true should load the same modules.
+//	MyAssert(DbgHelp.SymRefreshModuleList(FProcess));
   end;
 
   // A process that calls SymInitialize should not call it again unless it calls SymCleanup first.
   if not FInitDone then begin
-	// Needs "symsrv.dll": 'srv*c:\WindowsSymbols*https://msdl.microsoft.com/download/symbols'
-	MyAssert(DbgHelp.SymInitialize(FProcess, PChar(SysUtils.ExtractFileDir(self.GetModuleFilename(0))), true));
+
+	// SYMOPT_DEBUG will cause diagnostics to be written to the "Event Log" window of the Delphi IDE:
+	SymOptions := SYMOPT_LOAD_LINES or SYMOPT_DEFERRED_LOADS or SYMOPT_UNDNAME;
+	if FEnableDebugOutput then SymOptions := SymOptions or SYMOPT_DEBUG;
+	DbgHelp.SymSetOptions(SymOptions);
+
+	SearchPath := SysUtils.ExtractFileDir(self.GetModuleFilename(0));
+	if FSymSearchPath <> '' then begin
+	  SearchPath := SearchPath + ';' + FSymSearchPath;
+	end;
+
+	MyAssert(DbgHelp.SymInitialize(FProcess, PChar(SearchPath), true));
 	FInitDone := true;
-	DbgHelp.SymSetOptions(SYMOPT_LOAD_LINES or SYMOPT_DEFERRED_LOADS);
   end;
 end;
 
@@ -272,7 +328,6 @@ end;
 class function TStackTraceHlp.GetFuncPtr(FuncName: PAnsiChar): pointer;
 begin
   Result := Windows.GetProcAddress(Windows.LoadLibrary('ntdll.dll'), FuncName);
-  Assert(Assigned(Result));
 end;
 
 
@@ -502,7 +557,7 @@ type
 	class function OsExceptionHandler(Info: PEXCEPTION_POINTERS): LONG; stdcall; static;
 
 	class function GetExceptionStackInfo(P: PExceptionRecord): pointer; static;
-	class procedure CleanupStackInfo(Info: Pointer); static; static;
+	class procedure CleanupStackInfo(Info: Pointer); static;
 	class function GetStackInfoString(Info: Pointer): string; static;
 
   private

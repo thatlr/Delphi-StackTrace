@@ -547,10 +547,15 @@ function SymSetOptions(
   ): DWORD; stdcall; external DbgHelpDLL name 'SymSetOptions';
 
 // DbgHelp.h:
+function SymRefreshModuleList(
+	hProcess: THandle
+  ): BOOL; stdcall; external DbgHelpDLL name 'SymRefreshModuleList';
+
+// DbgHelp.h:
 function SymFunctionTableAccess64(
 	hProcess: THandle;
 	AddrBase: DWORD64
-): pointer; stdcall; external DbgHelpDLL name 'SymFunctionTableAccess64';
+  ): pointer; stdcall; external DbgHelpDLL name 'SymFunctionTableAccess64';
 
 // DbgHelp.h:
 function SymGetModuleBase64(
@@ -571,7 +576,7 @@ function SymFromAddr(
 	dwAddr: DWORD64;
 	out Displacement: DWORD64;
 	var Symbol: SYMBOL_INFO
-	): BOOL; stdcall; external DbgHelpDLL name {$ifdef UNICODE}'SymFromAddrW'{$else}'SymFromAddr'{$endif};
+  ): BOOL; stdcall; external DbgHelpDLL name {$ifdef UNICODE}'SymFromAddrW'{$else}'SymFromAddr'{$endif};
 (*
 // DbgHelp.h:
 function SymGetSymFromAddr64(
@@ -587,7 +592,7 @@ function SymGetLineFromAddr64(
 	dwAddr: DWORD64;
 	out pdwDisplacement: DWORD;
 	out Line: IMAGEHLP_LINE64
-): BOOL; stdcall; external DbgHelpDLL name {$ifdef UNICODE}'SymGetLineFromAddrW64'{$else}'SymGetLineFromAddr64'{$endif};
+  ): BOOL; stdcall; external DbgHelpDLL name {$ifdef UNICODE}'SymGetLineFromAddrW64'{$else}'SymGetLineFromAddr64'{$endif};
 
 
 type
