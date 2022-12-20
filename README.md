@@ -49,19 +49,20 @@ two DLLs from the "Windows Debugging Tools":
   https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/debugger-download-tools
 
 Both "dbghelp.dll" and "symsrv.dll" from
-  "C:\Program Files (x86)\Windows Kits\10\Debuggers\x86" (32 bit)
+	  "C:\Program Files (x86)\Windows Kits\10\Debuggers\x86" (32 bit)
 or
-  "C:\Program Files (x86)\Windows Kits\10\Debuggers\x64" (64 bit)
+	  "C:\Program Files (x86)\Windows Kits\10\Debuggers\x64" (64 bit)
 needs to be copied into the same folder as the Delphi executable.
 
 To have the Windows symbols be used, the symbol search path needs to be altered, like this:
+
 	TStackTraceHlp.SymSearchPath := 'srv*c:\temp\symbols*https://msdl.microsoft.com/download/symbols';
 
 "c:\temp\symbols" inside this example string specifies a folder that is used as a cache for the downloaded PDBs (see
   https://learn.microsoft.com/en-us/windows/win32/debug/symbol-paths).
 
-As the download takes time and needs internet connectivity, and the cache folder needs to exist, this is usually not an option
-for production environments.
+As the download takes time and needs internet connectivity, and the cache folder needs to be placed somewhere, this is usually not an option
+for production environments (at least not on end-user PCs).
 
 Example stacktrace without Windows symbols (32 bit):
   
