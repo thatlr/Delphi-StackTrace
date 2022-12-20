@@ -29,7 +29,7 @@ unit StackTrace;
 
   Enable lookup of Windows symbols:
 
-  The standard dbghelp.dll that comes with Windows does not support downloading symbol servers. To enable this, you need
+  The standard dbghelp.dll that comes with Windows does not support downloading from symbol servers. To use this, you need
   two DLLs from the "Windows Debugging Tools":
 	https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/debugger-download-tools
 
@@ -45,8 +45,8 @@ unit StackTrace;
   "c:\temp\symbols" inside this example string specifies a folder that is used as a cache for the downloaded PDBs (see
   https://learn.microsoft.com/en-us/windows/win32/debug/symbol-paths).
 
-  As the download takes time, and the cache folder needs to be there, this is usually not an option for
-  production environments.
+  As the download takes time and needs internet connectivity, and the cache folder needs to exist, this is usually not an option
+  for production environments.
 }
 
 {$include LibOptions.inc}

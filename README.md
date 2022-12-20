@@ -40,3 +40,51 @@ stackinfo from the original object which is now gone. It is not possible to recr
 very last stackinfo, but depending on other exceptions thrown and catched between the original point and the reraise point,
 it may be no longer the correct one. But: When AcquireExceptionObject is used, reraising works also in 32bit for every type
 of exception.
+
+
+Enable lookup of Windows symbols:
+
+The standard dbghelp.dll that comes with Windows does not support downloading from symbol servers. To use this, you need
+two DLLs from the "Windows Debugging Tools":
+  https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/debugger-download-tools
+
+Both "dbghelp.dll" and "symsrv.dll" from
+  "C:\Program Files (x86)\Windows Kits\10\Debuggers\x86" (32 bit)
+or
+  "C:\Program Files (x86)\Windows Kits\10\Debuggers\x64" (64 bit)
+needs to be copied into the same folder as the Delphi executable.
+
+To have the Windows symbols be used, the symbol search path needs to be altered, like this:
+	TStackTraceHlp.SymSearchPath := 'srv*c:\temp\symbols*https://msdl.microsoft.com/download/symbols';
+
+"c:\temp\symbols" inside this example string specifies a folder that is used as a cache for the downloaded PDBs (see
+  https://learn.microsoft.com/en-us/windows/win32/debug/symbol-paths).
+
+As the download takes time and needs internet connectivity, and the cache folder needs to exist, this is usually not an option
+for production environments.
+
+Example stacktrace without Windows symbols (32 bit):
+  
+	Callstack from inside EnumWindows:
+	  at SimpleTest.exe: EnumWindowsCallback in SimpleTest.dpr (Line 372)
+	  at user32.dll: SendMessageW + 0x111
+	  at user32.dll: EnumWindows + 0x1A
+	  at SimpleTest.exe: TestCallStackFromWithinWindowsCallback in SimpleTest.dpr (Line 383)
+	  at SimpleTest.exe: Main in SimpleTest.dpr (Line 436)
+	  at SimpleTest.exe: SimpleTest + 0x1D
+	  at KERNEL32.DLL: BaseThreadInitThunk + 0x19
+	  at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x11E
+	  at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0xEE
+
+Same with Windows symbols (32 bit):
+
+	Callstack from inside EnumWindows:
+	  at SimpleTest.exe: EnumWindowsCallback in SimpleTest.dpr (Line 372)
+	  at user32.dll: EnumWindowsWorker + 0x88
+	  at user32.dll: EnumWindows + 0x1A
+	  at SimpleTest.exe: TestCallStackFromWithinWindowsCallback in SimpleTest.dpr (Line 383)
+	  at SimpleTest.exe: Main in SimpleTest.dpr (Line 435)
+	  at SimpleTest.exe: SimpleTest + 0x1D
+	  at KERNEL32.DLL: BaseThreadInitThunk + 0x19
+	  at ntdll.dll: __RtlUserThreadStart + 0x2F
+	  at ntdll.dll: _RtlUserThreadStart + 0x1B
