@@ -42,7 +42,10 @@ it may be no longer the correct one. But: When AcquireExceptionObject is used, r
 of exception.
 
 
-Enable lookup of Windows symbols:
+## Enable lookup of Windows symbols
+
+For general info, please look here:
+  https://learn.microsoft.com/en-us/windows/win32/dxtecharts/debugging-with-symbols
 
 The standard dbghelp.dll that comes with Windows does not support downloading from symbol servers. To use this, you need
 two DLLs from the "Windows Debugging Tools":
