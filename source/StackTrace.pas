@@ -233,7 +233,7 @@ end;
 { TStackTraceHlp }
 
  //===================================================================================================================
- // Setup for getting stack traces on Delphi exceptions.
+ // Registering callback on DLL loading/unloading notification.
  //===================================================================================================================
 class procedure TStackTraceHlp.Init;
 var
@@ -247,7 +247,7 @@ end;
 
 
  //===================================================================================================================
- // Teardown for getting stack traces on Delphi exceptions.
+ // Unregistering notification callback.
  //===================================================================================================================
 class procedure TStackTraceHlp.Fini;
 var
@@ -600,6 +600,9 @@ end;
 
  //===================================================================================================================
  // Teardown for getting stack traces on Delphi exceptions.
+ // Bug since Delphi 2009: SysUtils.pas, line 17891, DoneExceptions:
+ //   InvalidPointer.*Free* should be *FreeInstance* (as a few lines before with OutOfMemory.FreeInstance)
+ // => Exception.CleanupStackInfo is also called for the shared "InvalidPointer" object which has no StackInfo.
  //===================================================================================================================
 class procedure TExceptionHelp.Fini;
 begin
@@ -636,8 +639,8 @@ end;
 
 
  //===================================================================================================================
- // Hook for Exception.GetExceptionStackInfoProc: Returns a TStack record as the result, which the Delphi RTL then
- // stores in the exception.
+ // Hook for Exception.GetExceptionStackInfoProc: Returns a TExceptionHelp.TFrames record as the result, which the Delphi
+ // RTL then stores in the exception.
  // Is called by the RTL:
  // - For Delphi's own exceptions ("raise" statement): Before calling the Windows exception mechanism and thus
  //   before OsExceptionHandler.
@@ -757,12 +760,10 @@ end;
 
  //===================================================================================================================
  // Hook for Exception.CleanupStackInfoProc: Releases  <Info>.
+ // <Info> can be nil, as EAbort exceptions are explicitly excluded in TExceptionHelp.GetExceptionStackInfo.
  //===================================================================================================================
 class procedure TExceptionHelp.CleanupStackInfo(Info: Pointer);
 begin
-  // Bug since Delphi 2009: SysUtils.pas, line 17891, DoneExceptions:
-  //   InvalidPointer.*Free* should be *FreeInstance* (as a few lines before with OutOfMemory.FreeInstance)
-  // => CleanupStackInfo is also called for the shared "InvalidPointer" object which has no StackInfo
   System.FreeMem(Info);
 end;
 

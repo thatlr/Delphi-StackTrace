@@ -27,7 +27,22 @@ To use it:
   You may want to use map2pdb with additional filters, as the PDBs gets very large, especially on 64bit.
 - Ship the PDB files together with the EXEs and DLLs, by putting them in the same directory.
 
+Usage notes:
+
+- The EAbort exception does not generate a stack trace because I think it's intended to implement control flow,
+such as aborting processing in a thread or task by a controlling entity (another thread or process).
+
+- In SysUtils, there are two singleton exception objects stored in the private global variables "OutOfMemory" and "InvalidPointer".
+Those are thrown by the procedure "System.Error" when called with reOutOfMemory or reInvalidPtr, respectively. Unfortunately, this
+is done by System.GetMem, System.AllocMem, System.FreeMem and System.ReallocMem to signal errors.
+As this singletons are *not thread-safe* in regards of (a) attaching stacktrace info to them, and (b) modifying the message text
+(Exception.Message) by application code, this approach should have been discarded with the explicit introduction of multi-threading
+in Delphi (TThread class, later: Parallel Programming Library).
+Having a stacktrace for an error with FreeMem() is very useful.
+
+
 Please note:
+
 As the Delphi runtime library handles things not consistently and contains bugs (see some of the comments in the code),
 I don't know if this works with other Delphi versions as well. Please use a memory leak detector to verify the behavior.
 
