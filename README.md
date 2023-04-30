@@ -27,10 +27,12 @@ To use it:
   You may want to use map2pdb with additional filters, as the PDBs gets very large, especially on 64bit.
 - Ship the PDB files together with the EXEs and DLLs, by putting them in the same directory.
 
+
 Usage notes:
 
-- The EAbort exception does not generate a stack trace because I think it's intended to implement control flow,
-such as aborting processing in a thread or task by a controlling entity (another thread or process).
+- The EAbort exception does not generate a stack trace because I think it is intended to implement control flow
+(i.e. abort processing without a special message). The VCL swallows EAbort exceptions in several places:
+ TApplication.HandleException(), TCustomApplicationEvents.DoException(), TMultiCaster.DoException().
 
 - In SysUtils, there are two singleton exception objects stored in the private global variables "OutOfMemory" and "InvalidPointer".
 Those are thrown by the procedure "System.Error" when called with reOutOfMemory or reInvalidPtr, respectively. Unfortunately, this
@@ -38,7 +40,20 @@ is done by System.GetMem, System.AllocMem, System.FreeMem and System.ReallocMem 
 As this singletons are *not thread-safe* in regards of (a) attaching stacktrace info to them, and (b) modifying the message text
 (Exception.Message) by application code, this approach should have been discarded with the explicit introduction of multi-threading
 in Delphi (TThread class, later: Parallel Programming Library).
-Having a stacktrace for an error with FreeMem() is very useful.
+
+  While I understand that out-of-memory is a situation where a pre-allocated exception object is useful (but it has to be thread-specific,
+or read-only, otherwise it won't work reliably in multi-threading scenarios), I don't understand why FreeMem() and ReallocMem() don't
+just throw an exception when erroneous application behavior is detected (e.g. an attempt to double-free memory). If the heap structure
+is already corrupt, throwing an exception doesn't help the application, even if a preallocated object is used. But if the heap structure
+is not corrupt, it would be useful to have a stack trace for a FreeMem() error. However, the EHeapException.RaisingException() method
+suppresses stacktrace generation for this exception classes.
+(Which at least prevents multiple threads from attaching their respective stack trace to it at the same time, thereby producing memory errors.
+But the Message property is not readonly, and modifying it on a singleton from multiple threads at the same time will cause memory leaks.)
+
+  Conclusion: A heap manager replacement should signal errors within FreeMem() and ReallocMem() by explicitly throwing a normal exception
+not derived from EHeapException. A non-zero value must only be returned by FreeMem() and ReallocMem() when the heap management
+structures are corrupted, but should not be returned if a duplicate free attempt or an invalid pointer is detected before the heap was
+corrupted. As long as the heap is not full and not corrupted, a normal non-EHeapException will suffice.
 
 
 Please note:
