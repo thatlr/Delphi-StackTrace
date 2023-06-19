@@ -32,7 +32,16 @@ Usage notes:
 
 - The EAbort exception does not generate a stack trace because I think it is intended to implement control flow
 (i.e. abort processing without a special message). The VCL swallows EAbort exceptions in several places:
- TApplication.HandleException(), TCustomApplicationEvents.DoException(), TMultiCaster.DoException().
+TApplication.HandleException(), TCustomApplicationEvents.DoException(), TMultiCaster.DoException().
+
+- The CPU stack does not record *where the call came from* but stores *where to continue after the call*. This leads to an effect
+that can also be experienced in the Delphi debugger: Sometimes, the source line in the stack trace is the line with the next
+statement that follows the actual call.
+
+- The Delphi runtime units (RTL, VCL, etc) are precompiled with {$StackFrames off} ({$W-}). Sometimes this leads to missing frames in
+the stack trace, since the debug engine has to guess how to interpret the stack. Since map2pdb only has the Delphi MAP file as
+input, the PDB file will most likely not contain "Frame Pointer Omission (FPO)" records, which would help the debug engine in
+these cases (https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/symbols-and-symbol-files).
 
 - In SysUtils, there are two singleton exception objects stored in the private global variables "OutOfMemory" and "InvalidPointer".
 Those are thrown by the procedure "System.Error" when called with reOutOfMemory or reInvalidPtr, respectively. Unfortunately, this
