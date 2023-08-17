@@ -44,13 +44,13 @@
 
 // D2009:
 {$ifdef VER200}
-  {$define Delphi2
-  {$define Delphi3
-  {$define Delphi4
-  {$define Delphi5
-  {$define Delphi6
-  {$define Delphi7
-  {$define Delphi8
+  {$define Delphi2}
+  {$define Delphi3}
+  {$define Delphi4}
+  {$define Delphi5}
+  {$define Delphi6}
+  {$define Delphi7}
+  {$define Delphi8}
   {$define D2005}
   {$define D2006}
   {$define D2007}
