@@ -45,8 +45,8 @@ unit StackTrace;
   "c:\temp\symbols" inside this example string specifies a folder that is used as a cache for the downloaded PDBs (see
   https://learn.microsoft.com/en-us/windows/win32/debug/symbol-paths).
 
-  As the download takes time and needs internet connectivity, and the cache folder needs to exist, this is usually not an option
-  for production environments.
+  As the download takes time and needs internet connectivity, and the cache folder needs to be placed somewhere, this is
+  usually not an option for production environments.
 }
 
 {$include LibOptions.inc}
@@ -82,12 +82,11 @@ type
 	  end;
 
 	const
-	  FProcess = THandle(-1);	// = Windows.GetCurrentProcess
 	  FThread = THandle(-2);	// = Windows.GetCurrentThread
 	class var
 	  FLock: TSlimRWLock;		// lock around all DbgHelp functions
 	  FHandlerCookie: pointer;	// LdrRegisterDllNotification handle
-	  FInitDone: boolean;		// state of DbgHelp regarding SymInitialize
+	  FProcess: THandle;		// real handle of the current process, non-zero after SymInitialize
 	  FDoReinit: boolean;		// set to true when a DLL was unloaded
 	  FSymSearchPath: string;	// additional locations to lookup PDB files
 	  FEnableDebugOutput: boolean;	// controls debug output from dbghelp.dll
@@ -146,7 +145,12 @@ type
  //===================================================================================================================
 procedure MyAssert(Cond: boolean); inline;
 begin
-  Assert(Cond);
+  {$ifopt C+}
+  if not Cond then begin
+	Windows.OutputDebugString('StackTrace error');
+	Windows.DebugBreak;
+  end;
+  {$endif}
 end;
 
 
@@ -233,7 +237,7 @@ end;
 { TStackTraceHlp }
 
  //===================================================================================================================
- // Registering callback on DLL loading/unloading notification.
+ // Setup for getting stack traces on Delphi exceptions.
  //===================================================================================================================
 class procedure TStackTraceHlp.Init;
 var
@@ -247,7 +251,7 @@ end;
 
 
  //===================================================================================================================
- // Unregistering notification callback.
+ // Teardown for getting stack traces on Delphi exceptions.
  //===================================================================================================================
 class procedure TStackTraceHlp.Fini;
 var
@@ -286,12 +290,15 @@ begin
 	self.FiniSyms;
 	// Note: Calling DbgHelp.SymRefreshModuleList(FProcess) takes much longer than simply reinitializing everything,
 	// even at the 2nd call in the same process, as it downloads Windows symbols for a lot of Windows DLLs.
-	// This is suprising as SymInitialize() with Invade=true should load the same modules.
+	// This is surprising as SymInitialize() with Invade=true should load the same modules.
 //	MyAssert(DbgHelp.SymRefreshModuleList(FProcess));
   end;
 
   // A process that calls SymInitialize should not call it again unless it calls SymCleanup first.
-  if not FInitDone then begin
+  if FProcess = 0 then begin
+
+	FProcess := Windows.OpenProcess(PROCESS_VM_READ or PROCESS_QUERY_INFORMATION, false, Windows.GetCurrentProcessId);
+	MyAssert(FProcess <> 0);
 
 	// SYMOPT_DEBUG will cause diagnostics to be written to the "Event Log" window of the Delphi IDE:
 	SymOptions := SYMOPT_LOAD_LINES or SYMOPT_DEFERRED_LOADS or SYMOPT_UNDNAME;
@@ -304,7 +311,6 @@ begin
 	end;
 
 	MyAssert(DbgHelp.SymInitialize(FProcess, PChar(SearchPath), true));
-	FInitDone := true;
   end;
 end;
 
@@ -315,9 +321,10 @@ end;
  //===================================================================================================================
 class procedure TStackTraceHlp.FiniSyms;
 begin
-  if FInitDone then begin
-	FInitDone := false;
+  if FProcess <> 0 then begin
 	MyAssert(DbgHelp.SymCleanup(FProcess));
+	MyAssert(Windows.CloseHandle(FProcess));
+	FProcess := 0;
   end;
 end;
 
@@ -422,7 +429,7 @@ var
   HaveSymbol: boolean;
   Line: IMAGEHLP_LINE64;
 begin
-  Assert(FInitDone);
+  MyAssert(FProcess <> 0);
 
   Finalize(Result);
   ZeroMem(Result, sizeof(Result));
@@ -600,9 +607,6 @@ end;
 
  //===================================================================================================================
  // Teardown for getting stack traces on Delphi exceptions.
- // Bug since Delphi 2009: SysUtils.pas, line 17891, DoneExceptions:
- //   InvalidPointer.*Free* should be *FreeInstance* (as a few lines before with OutOfMemory.FreeInstance)
- // => Exception.CleanupStackInfo is also called for the shared "InvalidPointer" object which has no StackInfo.
  //===================================================================================================================
 class procedure TExceptionHelp.Fini;
 begin
@@ -639,8 +643,8 @@ end;
 
 
  //===================================================================================================================
- // Hook for Exception.GetExceptionStackInfoProc: Returns a TExceptionHelp.TFrames record as the result, which the Delphi
- // RTL then stores in the exception.
+ // Hook for Exception.GetExceptionStackInfoProc: Returns a TStack record as the result, which the Delphi RTL then
+ // stores in the exception.
  // Is called by the RTL:
  // - For Delphi's own exceptions ("raise" statement): Before calling the Windows exception mechanism and thus
  //   before OsExceptionHandler.
@@ -760,10 +764,12 @@ end;
 
  //===================================================================================================================
  // Hook for Exception.CleanupStackInfoProc: Releases  <Info>.
- // <Info> can be nil, as EAbort exceptions are explicitly excluded in TExceptionHelp.GetExceptionStackInfo.
  //===================================================================================================================
 class procedure TExceptionHelp.CleanupStackInfo(Info: Pointer);
 begin
+  // Bug since Delphi 2009: SysUtils.pas, line 17891, DoneExceptions:
+  //   InvalidPointer.*Free* should be *FreeInstance* (as a few lines before with OutOfMemory.FreeInstance)
+  // => CleanupStackInfo is also called for the shared "InvalidPointer" object which has no StackInfo
   System.FreeMem(Info);
 end;
 
