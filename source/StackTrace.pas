@@ -400,8 +400,12 @@ begin
 		dec(SkipFrames);
 		continue;
 	  end;
-	  Addrs[Result] := Frame.AddrPC.Offset;
-	  inc(Result);
+	  // prevent a Range Check exception on 32bit if Frame.AddrPC.Offset contains uint64(-1) which happens sometimes
+	  // (what does this mean?):
+	  if Frame.AddrPC.Offset <> DWORD64(-1) then begin
+		Addrs[Result] := Frame.AddrPC.Offset;
+		inc(Result);
+	  end;
 	end;
 
   finally
