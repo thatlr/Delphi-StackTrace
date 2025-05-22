@@ -10,12 +10,13 @@ it works for any module (exe and dll), as long as a matching PDB
 file is providing the mapping between code addresses
 and funtion names plus source code location.
 
-Therefore, you can use Anders Melander's map2pdb from https://bitbucket.org/anders_melander/map2pdb
+Therefore, you can use Anders Melander's map2pdb from https://github.com/andersmelander/map2pdb
 and enjoy nice complete and correct stack traces.
 
 Tested with:
 - Delphi 2009
 - Delphi 10.1.2 Berlin: 32bit and 64bit
+- Delphi 12.3 Athens: 32bit and 64bit
 
 To use it:
 - Include the Stacktrace unit, by manually adding it to the top of the uses list in the dpr file.
