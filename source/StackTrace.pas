@@ -400,12 +400,17 @@ begin
 		dec(SkipFrames);
 		continue;
 	  end;
-	  // prevent a Range Check exception on 32bit if Frame.AddrPC.Offset contains uint64(-1) which happens sometimes
-	  // (what does this mean?):
-	  if Frame.AddrPC.Offset <> DWORD64(-1) then begin
-		Addrs[Result] := Frame.AddrPC.Offset;
+	  {$ifdef Win64}
+	  Addrs[Result] := Frame.AddrPC.Offset;
+	  inc(Result);
+	  {$else}
+	  // prevent a Range Check exception on 32bit if Frame.AddrPC.Offset contains uint64(-1) which happens sometimes,
+	  // or a full 64bit address (happens when casting a COM interface fails):
+	  if Int64Rec(Frame.AddrPC.Offset).Hi = 0 then begin
+		Addrs[Result] := Int64Rec(Frame.AddrPC.Offset).Lo;
 		inc(Result);
 	  end;
+	  {$endif}
 	end;
 
   finally
