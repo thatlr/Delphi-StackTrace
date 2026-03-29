@@ -50,7 +50,7 @@ Zugriffsverletzung bei Adresse 001B894C in Modul 'SimpleTest.exe'. Schreiben von
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
 ~~~~~~~~~~~~
-Nicht implementiert: Exception "EOleException"
+Not implemented: Exception "EOleException"
   at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 311)
   at SimpleTest.exe: CheckAutoResult in System.pas (Line 21835)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 476)
@@ -58,7 +58,7 @@ Nicht implementiert: Exception "EOleException"
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
-Nicht implementiert: Exception "EOleException"
+Not implemented: Exception "EOleException"
   at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 336)
   at SimpleTest.exe: CheckAutoResult in System.pas (Line 21835)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 476)

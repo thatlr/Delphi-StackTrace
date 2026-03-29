@@ -30,27 +30,27 @@ Division by zero: Exception "EDivByZero"
   at KERNEL32.DLL: BaseThreadInitThunk + 0x17
   at ntdll.dll: RtlUserThreadStart + 0x2C
 ~~~~~~~~~~~~
-Access violation at address 0000000000175D66 in module 'SimpleTest.exe'. Write of address 0000000000000014: Exception "EAccessViolation"
+Access violation at address 0000000000395D66 in module 'SimpleTest.exe'. Write of address 0000000000000014: Exception "EAccessViolation"
   at SimpleTest.exe: TestEAccessViolation in SimpleTest.dpr (Line 211)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 472)
   at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 491)
   at KERNEL32.DLL: BaseThreadInitThunk + 0x17
   at ntdll.dll: RtlUserThreadStart + 0x2C
-Access violation at address 0000000000175E2E in module 'SimpleTest.exe'. Write of address 0000000000000014: Exception "EAccessViolation"
+Access violation at address 0000000000395E2E in module 'SimpleTest.exe'. Write of address 0000000000000014: Exception "EAccessViolation"
   at SimpleTest.exe: TestEAccessViolation in SimpleTest.dpr (Line 236)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 472)
   at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 491)
   at KERNEL32.DLL: BaseThreadInitThunk + 0x17
   at ntdll.dll: RtlUserThreadStart + 0x2C
 ~~~~~~~~~~~~
-Nicht implementiert: Exception "EOleException"
+Not implemented: Exception "EOleException"
   at SimpleTest.exe: CheckAutoResult in System.pas (Line 40317)
   at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 313)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 476)
   at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 491)
   at KERNEL32.DLL: BaseThreadInitThunk + 0x17
   at ntdll.dll: RtlUserThreadStart + 0x2C
-Nicht implementiert: Exception "EOleException"
+Not implemented: Exception "EOleException"
   at SimpleTest.exe: CheckAutoResult in System.pas (Line 40317)
   at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 336)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 476)

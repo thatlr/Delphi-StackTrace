@@ -35,14 +35,14 @@ Division by zero: Exception "EDivByZero"
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
 ~~~~~~~~~~~~
-Access violation at address 00E1657F in module 'SimpleTest.exe'. Write of address 00000014: Exception "EAccessViolation"
+Access violation at address 00C4657F in module 'SimpleTest.exe'. Write of address 00000014: Exception "EAccessViolation"
   at SimpleTest.exe: TestEAccessViolation in SimpleTest.dpr (Line 211)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 472)
   at SimpleTest.exe: SimpleTest + 0x1D
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
-Access violation at address 00E16682 in module 'SimpleTest.exe'. Write of address 00000014: Exception "EAccessViolation"
+Access violation at address 00C46682 in module 'SimpleTest.exe'. Write of address 00000014: Exception "EAccessViolation"
   at SimpleTest.exe: TestEAccessViolation in SimpleTest.dpr (Line 236)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 472)
   at SimpleTest.exe: SimpleTest + 0x1D
@@ -50,7 +50,7 @@ Access violation at address 00E16682 in module 'SimpleTest.exe'. Write of addres
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
 ~~~~~~~~~~~~
-Nicht implementiert: Exception "EOleException"
+Not implemented: Exception "EOleException"
   at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 311)
   at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 311)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 476)
@@ -58,7 +58,7 @@ Nicht implementiert: Exception "EOleException"
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
-Nicht implementiert: Exception "EOleException"
+Not implemented: Exception "EOleException"
   at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 336)
   at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 336)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 476)
