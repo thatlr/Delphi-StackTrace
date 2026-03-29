@@ -13,7 +13,9 @@ uses
   Stacktrace,
   Windows,
   SysUtils,
-  ComObj;		// sets System.SafeCallErrorProc in newer RTL versions (SafeCallErrorProc was set by SysUtils.pas in D2009!)
+  ActiveX,
+  ComObj,		// sets System.SafeCallErrorProc in newer RTL versions (SafeCallErrorProc was set by SysUtils.pas in D2009!)
+  ShlObj;
 
 
 // IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE = $8000: Terminal server aware
@@ -365,6 +367,48 @@ end;
 
 
  //===================================================================================================================
+ // Testing exception thrown by casting a COM interface to some non-supported interface:
+ // In 32bit, the Delphi RTL puts a zero value as code address in the exception (System._IntfCast => System.Error => System.ErrorAt)!
+ //   -> Due to this, you get no stacktrace at all for this exception.
+ // In 64bit, is works as expected.
+ //===================================================================================================================
+procedure TestIntfCastException;
+var
+  res: HRESULT;
+  IDList: PItemIDList;
+  Item: IShellItem;
+  Folder: IShellFolder;
+begin
+  ActiveX.CoInitialize(nil);
+  try
+
+	// retrieve IDList:
+	res := ShlObj.SHGetFolderLocation(0, CSIDL_DRIVES or CSIDL_FLAG_DONT_VERIFY, 0, 0, IDList);
+	Assert(ActiveX.Succeeded(res) and (IDList <> nil));
+	// create the COM object Item from IDList:
+	res := ShlObj.SHCreateItemFromIDList(IDList, IShellItem, Item);
+	Assert(ActiveX.Succeeded(res) and Assigned(Item));
+	// free IDListe:
+	ActiveX.CoTaskMemFree(IDList);
+
+	try
+	  // try to cast from IShellItem to IShellFolder which will fail:
+	  Folder := Item as IShellFolder;
+	except
+	  on e: Exception do begin
+		Writeln(e.Message, ': Exception "', e.ClassName, '"');
+		Writeln(e.StackTrace);
+	  end;
+	end;
+
+  finally
+	Item := nil;
+	ActiveX.CoUninitialize;
+  end;
+end;
+
+
+ //===================================================================================================================
  //===================================================================================================================
 function EnumWindowsCallback(hwnd: HWND; lParam: LPARAM): BOOL; stdcall;
 begin
@@ -428,6 +472,10 @@ begin
   Writeln('~~~~~~~~~~~~');
 
   TestSafecallException;
+
+  Writeln('~~~~~~~~~~~~');
+
+  TestIntfCastException;
 
   Writeln('~~~~~~~~~~~~');
 

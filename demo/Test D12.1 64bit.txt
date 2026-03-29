@@ -30,13 +30,13 @@ Division by zero: Exception "EDivByZero"
   at KERNEL32.DLL: BaseThreadInitThunk + 0x17
   at ntdll.dll: RtlUserThreadStart + 0x2C
 ~~~~~~~~~~~~
-Access violation at address 00000000004E8296 in module 'SimpleTest.exe'. Write of address 0000000000000014: Exception "EAccessViolation"
+Access violation at address 0000000000175D66 in module 'SimpleTest.exe'. Write of address 0000000000000014: Exception "EAccessViolation"
   at SimpleTest.exe: TestEAccessViolation in SimpleTest.dpr (Line 211)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 472)
   at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 491)
   at KERNEL32.DLL: BaseThreadInitThunk + 0x17
   at ntdll.dll: RtlUserThreadStart + 0x2C
-Access violation at address 00000000004E835E in module 'SimpleTest.exe'. Write of address 0000000000000014: Exception "EAccessViolation"
+Access violation at address 0000000000175E2E in module 'SimpleTest.exe'. Write of address 0000000000000014: Exception "EAccessViolation"
   at SimpleTest.exe: TestEAccessViolation in SimpleTest.dpr (Line 236)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 472)
   at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 491)
@@ -44,14 +44,14 @@ Access violation at address 00000000004E835E in module 'SimpleTest.exe'. Write o
   at ntdll.dll: RtlUserThreadStart + 0x2C
 ~~~~~~~~~~~~
 Nicht implementiert: Exception "EOleException"
-  at SimpleTest.exe: CheckAutoResult in System.pas (Line 37585)
+  at SimpleTest.exe: CheckAutoResult in System.pas (Line 40317)
   at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 313)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 476)
   at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 491)
   at KERNEL32.DLL: BaseThreadInitThunk + 0x17
   at ntdll.dll: RtlUserThreadStart + 0x2C
 Nicht implementiert: Exception "EOleException"
-  at SimpleTest.exe: CheckAutoResult in System.pas (Line 37585)
+  at SimpleTest.exe: CheckAutoResult in System.pas (Line 40317)
   at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 336)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 476)
   at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 491)
@@ -59,8 +59,8 @@ Nicht implementiert: Exception "EOleException"
   at ntdll.dll: RtlUserThreadStart + 0x2C
 ~~~~~~~~~~~~
 Interface not supported: Exception "EIntfCastError"
-  at SimpleTest.exe: ErrorAt in System.pas (Line 5543)
-  at SimpleTest.exe: IntfCast in System.pas (Line 36609)
+  at SimpleTest.exe: ErrorAt in System.pas (Line 5915)
+  at SimpleTest.exe: IntfCast in System.pas (Line 39197)
   at SimpleTest.exe: TestIntfCastException in SimpleTest.dpr (Line 396)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 480)
   at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 491)
@@ -69,7 +69,7 @@ Interface not supported: Exception "EIntfCastError"
 ~~~~~~~~~~~~
 Callstack from inside EnumWindows:
   at SimpleTest.exe: EnumWindowsCallback in SimpleTest.dpr (Line 416)
-  at user32.dll: EnumWindows + 0x116
+  at USER32.dll: EnumWindows + 0x116
   at SimpleTest.exe: TestCallStackFromWithinWindowsCallback in SimpleTest.dpr (Line 427)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 484)
   at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 491)

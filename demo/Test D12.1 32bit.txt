@@ -20,14 +20,14 @@ Exception #2: Exception "Exception"
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
 ~~~~~~~~~~~~
-Division durch Null: Exception "EDivByZero"
+Division by zero: Exception "EDivByZero"
   at SimpleTest.exe: TestOsException in SimpleTest.dpr (Line 141)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 466)
   at SimpleTest.exe: SimpleTest + 0x1D
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
-Division durch Null: Exception "EDivByZero"
+Division by zero: Exception "EDivByZero"
   at SimpleTest.exe: TestOsException in SimpleTest.dpr (Line 166)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 466)
   at SimpleTest.exe: SimpleTest + 0x1D
@@ -35,14 +35,14 @@ Division durch Null: Exception "EDivByZero"
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
 ~~~~~~~~~~~~
-Zugriffsverletzung bei Adresse 001B884B in Modul 'SimpleTest.exe'. Schreiben von Adresse 00000014: Exception "EAccessViolation"
+Access violation at address 00E1657F in module 'SimpleTest.exe'. Write of address 00000014: Exception "EAccessViolation"
   at SimpleTest.exe: TestEAccessViolation in SimpleTest.dpr (Line 211)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 472)
   at SimpleTest.exe: SimpleTest + 0x1D
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
-Zugriffsverletzung bei Adresse 001B894C in Modul 'SimpleTest.exe'. Schreiben von Adresse 00000014: Exception "EAccessViolation"
+Access violation at address 00E16682 in module 'SimpleTest.exe'. Write of address 00000014: Exception "EAccessViolation"
   at SimpleTest.exe: TestEAccessViolation in SimpleTest.dpr (Line 236)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 472)
   at SimpleTest.exe: SimpleTest + 0x1D
@@ -52,7 +52,7 @@ Zugriffsverletzung bei Adresse 001B894C in Modul 'SimpleTest.exe'. Schreiben von
 ~~~~~~~~~~~~
 Nicht implementiert: Exception "EOleException"
   at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 311)
-  at SimpleTest.exe: CheckAutoResult in System.pas (Line 21835)
+  at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 311)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 476)
   at SimpleTest.exe: SimpleTest + 0x1D
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
@@ -60,20 +60,20 @@ Nicht implementiert: Exception "EOleException"
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
 Nicht implementiert: Exception "EOleException"
   at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 336)
-  at SimpleTest.exe: CheckAutoResult in System.pas (Line 21835)
+  at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 336)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 476)
   at SimpleTest.exe: SimpleTest + 0x1D
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
 ~~~~~~~~~~~~
-Interface nicht unterstützt: Exception "EIntfCastError"
-  at 0x00000000
+Interface not supported: Exception "EIntfCastError"
+  at SimpleTest.exe: ErrorHandler in System.SysUtils.pas (Line 24636)
 ~~~~~~~~~~~~
 Callstack from inside EnumWindows:
   at SimpleTest.exe: EnumWindowsCallback in SimpleTest.dpr (Line 416)
-  at user32.dll: GetWindow + 0xADD
-  at user32.dll: EnumWindows + 0x1A
+  at USER32.dll: GetWindow + 0xADD
+  at USER32.dll: EnumWindows + 0x1A
   at SimpleTest.exe: TestCallStackFromWithinWindowsCallback in SimpleTest.dpr (Line 427)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 484)
   at SimpleTest.exe: SimpleTest + 0x1D
