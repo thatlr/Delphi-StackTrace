@@ -13,9 +13,7 @@ uses
   Stacktrace,
   Windows,
   SysUtils,
-  ActiveX,
-  ComObj,		// sets System.SafeCallErrorProc in newer RTL versions (SafeCallErrorProc was set by SysUtils.pas in D2009!)
-  ShlObj;
+  ComObj;		// sets System.SafeCallErrorProc in newer RTL versions (SafeCallErrorProc was set by SysUtils.pas in D2009!)
 
 
 // IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE = $8000: Terminal server aware
@@ -374,36 +372,23 @@ end;
  //===================================================================================================================
 procedure TestIntfCastException;
 var
-  res: HRESULT;
-  IDList: PItemIDList;
-  Item: IShellItem;
-  Folder: IShellFolder;
+  Intf: IUnknown;
+  Intf2: IDispatch;
 begin
-  ActiveX.CoInitialize(nil);
+  // retrieve IDList:
+  Intf := TTestComErrObj.Create;
+
   try
-
-	// retrieve IDList:
-	res := ShlObj.SHGetFolderLocation(0, CSIDL_DRIVES or CSIDL_FLAG_DONT_VERIFY, 0, 0, IDList);
-	Assert(ActiveX.Succeeded(res) and (IDList <> nil));
-	// create the COM object Item from IDList:
-	res := ShlObj.SHCreateItemFromIDList(IDList, IShellItem, Item);
-	Assert(ActiveX.Succeeded(res) and Assigned(Item));
-	// free IDListe:
-	ActiveX.CoTaskMemFree(IDList);
-
-	try
-	  // try to cast from IShellItem to IShellFolder which will fail:
-	  Folder := Item as IShellFolder;
-	except
-	  on e: Exception do begin
-		Writeln(e.Message, ': Exception "', e.ClassName, '"');
-		Writeln(e.StackTrace);
-	  end;
+	// Try to cast to IDispatch which does QueryInterface and then raises an exception from within System._IntfCast:
+	// This behaves differently than calling System.Error(reIntfCastError) directly: Due to the stack manipulation in
+	// _IntfCast before the JMP to System.Error, MOV EDX,[ESP] in System.Error() does not read the return address from
+	// the stack.
+	Intf2 := Intf as IDispatch;
+  except
+	on e: Exception do begin
+	  Writeln(e.Message, ': Exception "', e.ClassName, '"');
+	  Writeln(e.StackTrace);
 	end;
-
-  finally
-	Item := nil;
-	ActiveX.CoUninitialize;
   end;
 end;
 

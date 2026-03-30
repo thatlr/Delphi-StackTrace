@@ -351,12 +351,12 @@ end;
 
  //===================================================================================================================
  // Returns the full path to the loaded module (EXE oder DLL) <hModule>.
- // Does not throw exceptions.
+ // Does not throw exceptions. Does not return path names longer than 511 characters.
  //===================================================================================================================
 class function TStackTraceHlp.GetModuleFilename(hModule: HINST): string;
 var
   Len: DWORD;
-  Buffer: array [0..MAX_PATH] of char;
+  Buffer: array [0..511] of char;
 begin
   Len := System.Length(Buffer);
   if Windows.GetModuleFileName(hModule, Buffer, Len) >= Len then
@@ -718,7 +718,9 @@ class function TExceptionHelp.GetExceptionStackInfo(p: PExceptionRecord): pointe
 var
   OsCtx: ^TOsExceptCtx;
   Ctx: DbgHelp.CONTEXT;
+  SkipFrames: uint32;
 begin
+  SkipFrames := 0;
   OsCtx := @gOsExceptCtx;
 
   if p.ExceptionCode = cDelphiException then begin
@@ -733,13 +735,24 @@ begin
 
 	// initial handling of a Delphi exception: System._RaiseExcept: Creates the Exception object before
 	// Windows.RaiseException is called => must construct a suitable Context:
-	Ctx.SetNull;
-	// System.pas, procedure _RaiseExcept, puts the registers of the exception point as 7 arguments into ExceptionInformation:
-	Assert(p.NumberParameters = 7);
-	Ctx.ContextFlags := CONTEXT_CONTROL;
-	Ctx.IP := TAddr(p.ExceptionAddress);
-	Ctx.SP := TAddr(p.ExceptionInformation[6]);
-	Ctx.BP := TAddr(p.ExceptionInformation[5]);
+
+	if p.ExceptionAddress = nil then begin
+	  // Workaround for bug in System._IntfCast: Due to the way _IntfCast invokes System.Error(reIntfCastError), there
+	  // is no valid data in the exception record => use this point to create Ctx.
+	  Ctx.SetNull;
+	  TStackTraceHlp.DoSetupContext(Ctx);
+	  // skip: TExceptionHelp.GetExceptionStackInfo, Exception.RaisingException:
+	  SkipFrames := 2;
+	end
+	else begin
+	  // System.pas, procedure _RaiseExcept, puts the registers of the exception point as 7 arguments into ExceptionInformation:
+	  Assert(p.NumberParameters = 7);
+	  Ctx.SetNull;
+	  Ctx.ContextFlags := CONTEXT_CONTROL;
+	  Ctx.IP := TAddr(p.ExceptionAddress);
+	  Ctx.SP := TAddr(p.ExceptionInformation[6]);
+	  Ctx.BP := TAddr(p.ExceptionInformation[5]);
+	end;
   end
   else if OsCtx.ValidCtx then begin
 	// initial handling of a non-Delphi exception: OsCtx contains the data captured immediately before:
@@ -760,7 +773,7 @@ begin
 	exit(nil);
 
   System.GetMem(Result, sizeof(TFrames));
-  PFrames(Result).Count := TStackTraceHlp.DoGetStackTrace(Ctx, 0, PFrames(Result).Addrs);
+  PFrames(Result).Count := TStackTraceHlp.DoGetStackTrace(Ctx, SkipFrames, PFrames(Result).Addrs);
 
   if p.ExceptionCode <> cDelphiException then begin
 	// non-Delphi exception: Context is consumed now, save the generated stackinfo for possible reraise:
