@@ -576,6 +576,13 @@ type
 	class procedure CleanupStackInfo(Info: Pointer); static;
 	class function GetStackInfoString(Info: Pointer): string; static;
 
+	{$ifndef Win64}
+	class var
+	  FSavedErrorProc: procedure (ErrorCode: Byte; ErrorAddr: Pointer);
+
+	class procedure ErrorProc(ErrorCode: Byte; ErrorAddr: Pointer); static;
+	{$endif}
+
   private
 	type
 	  TOsExceptCtx = record
@@ -611,6 +618,11 @@ begin
   // hook into Windows exception handling:
   FHandlerHandle := DbgHelp.AddVectoredExceptionHandler(1, OsExceptionHandler);
   Assert(FHandlerHandle <> nil);
+
+  {$ifndef Win64}
+  FSavedErrorProc := System.ErrorProc;
+  System.ErrorProc := TExceptionHelp.ErrorProc;
+  {$endif}
 end;
 
 
@@ -619,12 +631,46 @@ end;
  //===================================================================================================================
 class procedure TExceptionHelp.Fini;
 begin
+  {$ifndef Win64}
+  System.ErrorProc := FSavedErrorProc;
+  {$endif}
+
   MyAssert(DbgHelp.RemoveVectoredExceptionHandler(FHandlerHandle) <> 0);
 
   SysUtils.Exception.GetExceptionStackInfoProc := nil;
   //  Release should remain possible: SysUtils.Exception.CleanupStackInfoProc not cleared
   SysUtils.Exception.GetStackInfoStringProc := nil;
 end;
+
+
+{$ifndef Win64}
+ //===================================================================================================================
+  // Workaround for:
+  // - Bug in System._IntfCast: It does a JMP to Error() with a non-conforming stack, making Error() unable to retrieve
+  //   the caller's address from the stack; by accident, it reads a zero value instead.
+  // - In later Delphi versions, SysUtils.ErrorHandler uses "raise E" without "at address" when called with a address
+  //   of zero. While this could theoretically compensate for the bug previously mentioned, it makes the stackwalk
+  //   engine unhappy.
+  // => Fix the nil address before it reaches SysUtils.ErrorHandler. For the stackwalk engine to pick it up, we need to
+  // have a regular stack frame, and use an address from inside this procedure.
+  // For Delphi XE2 and up, the address could stay at nil (in D13 it works with nil), but the stackframe is
+  // still needed.
+ //===================================================================================================================
+class procedure TExceptionHelp.ErrorProc(ErrorCode: Byte; ErrorAddr: Pointer);
+asm
+  // AL = ErrroCode
+  // EDX = ErrorAddr
+  PUSH EBP
+  MOV EBP, ESP				// establish standard stack frame
+  TEST EDX, EDX             // ErrorAddr = nil?
+  JNZ @@1
+  MOV EDX, offset @@1		// ErrorAddr := address from inside this proc
+@@1:
+  CALL [FSavedErrorProc]
+  MOV ESP, EBP
+  POP EBP
+end;
+{$endif}
 
 
  //===================================================================================================================
@@ -718,9 +764,7 @@ class function TExceptionHelp.GetExceptionStackInfo(p: PExceptionRecord): pointe
 var
   OsCtx: ^TOsExceptCtx;
   Ctx: DbgHelp.CONTEXT;
-  SkipFrames: uint32;
 begin
-  SkipFrames := 0;
   OsCtx := @gOsExceptCtx;
 
   if p.ExceptionCode = cDelphiException then begin
@@ -736,23 +780,13 @@ begin
 	// initial handling of a Delphi exception: System._RaiseExcept: Creates the Exception object before
 	// Windows.RaiseException is called => must construct a suitable Context:
 
-	if p.ExceptionAddress = nil then begin
-	  // Workaround for bug in System._IntfCast: Due to the way _IntfCast invokes System.Error(reIntfCastError), there
-	  // is no valid data in the exception record => use this point to create Ctx.
-	  Ctx.SetNull;
-	  TStackTraceHlp.DoSetupContext(Ctx);
-	  // skip: TExceptionHelp.GetExceptionStackInfo, Exception.RaisingException:
-	  SkipFrames := 2;
-	end
-	else begin
-	  // System.pas, procedure _RaiseExcept, puts the registers of the exception point as 7 arguments into ExceptionInformation:
-	  Assert(p.NumberParameters = 7);
-	  Ctx.SetNull;
-	  Ctx.ContextFlags := CONTEXT_CONTROL;
-	  Ctx.IP := TAddr(p.ExceptionAddress);
-	  Ctx.SP := TAddr(p.ExceptionInformation[6]);
-	  Ctx.BP := TAddr(p.ExceptionInformation[5]);
-	end;
+    // System.pas, procedure _RaiseExcept, puts the registers of the exception point as 7 arguments into ExceptionInformation:
+    Assert(p.NumberParameters = 7);
+    Ctx.SetNull;
+    Ctx.ContextFlags := CONTEXT_CONTROL;
+    Ctx.IP := TAddr(p.ExceptionAddress);
+    Ctx.SP := TAddr(p.ExceptionInformation[6]);
+    Ctx.BP := TAddr(p.ExceptionInformation[5]);
   end
   else if OsCtx.ValidCtx then begin
 	// initial handling of a non-Delphi exception: OsCtx contains the data captured immediately before:
@@ -773,7 +807,7 @@ begin
 	exit(nil);
 
   System.GetMem(Result, sizeof(TFrames));
-  PFrames(Result).Count := TStackTraceHlp.DoGetStackTrace(Ctx, SkipFrames, PFrames(Result).Addrs);
+  PFrames(Result).Count := TStackTraceHlp.DoGetStackTrace(Ctx, 0, PFrames(Result).Addrs);
 
   if p.ExceptionCode <> cDelphiException then begin
 	// non-Delphi exception: Context is consumed now, save the generated stackinfo for possible reraise:

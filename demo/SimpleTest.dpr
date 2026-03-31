@@ -384,6 +384,7 @@ begin
 	// _IntfCast before the JMP to System.Error, MOV EDX,[ESP] in System.Error() does not read the return address from
 	// the stack.
 	Intf2 := Intf as IDispatch;
+    //System.Error(reIntfCastError);
   except
 	on e: Exception do begin
 	  Writeln(e.Message, ': Exception "', e.ClassName, '"');
