@@ -35,14 +35,14 @@ Division durch Null: Exception "EDivByZero"
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
 ~~~~~~~~~~~~
-Zugriffsverletzung bei Adresse 001B884B in Modul 'SimpleTest.exe'. Schreiben von Adresse 00000014: Exception "EAccessViolation"
+Zugriffsverletzung bei Adresse 00B78887 in Modul 'SimpleTest.exe'. Schreiben von Adresse 00000014: Exception "EAccessViolation"
   at SimpleTest.exe: TestEAccessViolation in SimpleTest.dpr (Line 211)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 472)
   at SimpleTest.exe: SimpleTest + 0x1D
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
-Zugriffsverletzung bei Adresse 001B894C in Modul 'SimpleTest.exe'. Schreiben von Adresse 00000014: Exception "EAccessViolation"
+Zugriffsverletzung bei Adresse 00B78988 in Modul 'SimpleTest.exe'. Schreiben von Adresse 00000014: Exception "EAccessViolation"
   at SimpleTest.exe: TestEAccessViolation in SimpleTest.dpr (Line 236)
   at SimpleTest.exe: Main in SimpleTest.dpr (Line 472)
   at SimpleTest.exe: SimpleTest + 0x1D
@@ -68,7 +68,13 @@ Not implemented: Exception "EOleException"
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
 ~~~~~~~~~~~~
 Interface nicht unterstützt: Exception "EIntfCastError"
-  at 0x00000000
+  at SimpleTest.exe: TExceptionHelp.ErrorProc in Stacktrace.pas (Line 669)
+  at SimpleTest.exe: ErrorAt in System.pas (Line 4058)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 480)
+  at SimpleTest.exe: SimpleTest + 0x1D
+  at KERNEL32.DLL: BaseThreadInitThunk + 0x19
+  at ntdll.dll: RtlInitializeExceptionChain + 0x6B
+  at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
 ~~~~~~~~~~~~
 Callstack from inside EnumWindows:
   at SimpleTest.exe: EnumWindowsCallback in SimpleTest.dpr (Line 416)
