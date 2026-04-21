@@ -25,6 +25,11 @@ uses
 {$SetPeFlags IMAGE_FILE_LARGE_ADDRESS_AWARE}
 
 
+type
+  // Exception with a valid Unicode name:
+  Exceptionµ = class(Exception);
+
+
 // since Windows 7:
 function SetProcessPreferredUILanguages(dwFlags: DWORD; pwszLanguagesBuffer: PWideChar; pulNumLanguages: PULONG): BOOL; stdcall; external Windows.kernel32 name 'SetProcessPreferredUILanguages';
 
@@ -395,6 +400,49 @@ end;
 
 
  //===================================================================================================================
+ // Testing symbols with non-ascii characters. The PDB format supports UTF8, so it should reproduce the correct names.
+ // For the fully correct names in the stacktrace, an updated version of map2pdb.exe is required.
+ //===================================================================================================================
+procedure TestUnicodeSymbolNames;
+
+	procedure UnicodeTest€ÄöÜß;
+
+	  // same name as outer procedure (different casing!), needs to be handled correctly by map2pdb and the debug engine:
+	  procedure UnicodeTest€äöüß;
+	  begin
+		raise Exceptionµ.Create('UnicodeTest');
+	  end;
+
+	  procedure UnicodeTest³€Äöüß²;
+	  begin
+		UnicodeTest€äöüß;
+	  end;
+
+	begin
+	  UnicodeTest³€Äöüß²;
+	end;
+
+begin
+  try
+	UnicodeTest€äöüß;
+  except
+	on e: Exception do begin
+	  // NOTE: The mapping of console output to the OEM character set is implemented somewhere after Delphi XE and before Delphi 10.
+	  // To see the correct output with older Delphi versions,
+	  // (a) you must redirect the output to a file,
+	  // (b) open this textfile on a computer where the codepage is 1252.
+	  // In cmd.exe:
+	  //    SimpleTest.exe >output.txt
+	  //    chcp 1252
+	  //    notepad.exe output.txt
+	  Writeln(e.Message, ': Exception "', e.ClassName, '"');
+	  Writeln(e.StackTrace);
+	end;
+  end;
+end;
+
+
+ //===================================================================================================================
  //===================================================================================================================
 function EnumWindowsCallback(hwnd: HWND; lParam: LPARAM): BOOL; stdcall;
 begin
@@ -440,6 +488,10 @@ begin
   Writeln(TStackTraceHlp.GetStackTrace);
 
   Writeln('~~~~~~~~~~~~');
+  
+  TestUnicodeSymbolNames;
+
+  Writeln('~~~~~~~~~~~~');
 
   TestDelpiException;
 
@@ -475,4 +527,3 @@ end;
 begin
   Main;
 end.
-
