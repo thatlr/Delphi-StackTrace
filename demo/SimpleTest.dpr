@@ -430,11 +430,7 @@ begin
 	  // NOTE: The mapping of console output to the OEM character set is implemented somewhere after Delphi XE and before Delphi 10.
 	  // To see the correct output with older Delphi versions,
 	  // (a) you must redirect the output to a file,
-	  // (b) open this textfile on a computer where the codepage is 1252.
-	  // In cmd.exe:
-	  //    SimpleTest.exe >output.txt
-	  //    chcp 1252
-	  //    notepad.exe output.txt
+	  // (b) open this textfile on the same computer (means: the text editor has to use same codepage as the demo program)
 	  Writeln(e.Message, ': Exception "', e.ClassName, '"');
 	  Writeln(e.StackTrace);
 	end;
