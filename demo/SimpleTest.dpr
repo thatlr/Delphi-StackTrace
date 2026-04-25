@@ -1,4 +1,4 @@
-program SimpleTest;
+﻿program SimpleTest;
 
 {$include CompilerOptions.inc}
 
@@ -423,6 +423,10 @@ procedure TestUnicodeSymbolNames;
 	end;
 
 begin
+  {$ifdef Delphi10}
+  Writeln('Codepage of "System.Output" = ', System.TTextRec(Output).CodePage);
+  {$endif}
+
   try
 	UnicodeTest€äöüß;
   except

@@ -1,78 +1,89 @@
-Stacktrace without exception:
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 440)
-  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 477)
+﻿Stacktrace without exception:
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 488)
+  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 529)
+  at KERNEL32.DLL: BaseThreadInitThunk + 0x17
+  at ntdll.dll: RtlUserThreadStart + 0x2C
+~~~~~~~~~~~~
+Codepage of "System.Output" = 1252
+UnicodeTest: Exception "Exceptionµ"
+  at SimpleTest.exe: UnicodeTest€äöüß in SimpleTest.dpr (Line 414)
+  at SimpleTest.exe: UnicodeTest³€Äöüß² in SimpleTest.dpr (Line 419)
+  at SimpleTest.exe: UnicodeTest€ÄöÜß in SimpleTest.dpr (Line 423)
+  at SimpleTest.exe: TestUnicodeSymbolNames in SimpleTest.dpr (Line 431)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 494)
+  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 529)
   at KERNEL32.DLL: BaseThreadInitThunk + 0x17
   at ntdll.dll: RtlUserThreadStart + 0x2C
 ~~~~~~~~~~~~
 Exception #1: Exception "Exception"
-  at SimpleTest.exe: TestDelpiException in SimpleTest.dpr (Line 67)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 446)
-  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 477)
+  at SimpleTest.exe: TestDelpiException in SimpleTest.dpr (Line 72)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 498)
+  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 529)
   at KERNEL32.DLL: BaseThreadInitThunk + 0x17
   at ntdll.dll: RtlUserThreadStart + 0x2C
 Exception #2: Exception "Exception"
-  at SimpleTest.exe: TestDelpiException in SimpleTest.dpr (Line 88)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 446)
-  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 477)
+  at SimpleTest.exe: TestDelpiException in SimpleTest.dpr (Line 93)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 498)
+  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 529)
   at KERNEL32.DLL: BaseThreadInitThunk + 0x17
   at ntdll.dll: RtlUserThreadStart + 0x2C
 ~~~~~~~~~~~~
 Division by zero: Exception "EDivByZero"
-  at SimpleTest.exe: TestOsException in SimpleTest.dpr (Line 139)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 452)
-  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 477)
+  at SimpleTest.exe: TestOsException in SimpleTest.dpr (Line 144)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 504)
+  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 529)
   at KERNEL32.DLL: BaseThreadInitThunk + 0x17
   at ntdll.dll: RtlUserThreadStart + 0x2C
 Division by zero: Exception "EDivByZero"
-  at SimpleTest.exe: TestOsException in SimpleTest.dpr (Line 164)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 452)
-  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 477)
+  at SimpleTest.exe: TestOsException in SimpleTest.dpr (Line 169)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 504)
+  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 529)
   at KERNEL32.DLL: BaseThreadInitThunk + 0x17
   at ntdll.dll: RtlUserThreadStart + 0x2C
 ~~~~~~~~~~~~
-Access violation at address 00000000004E5766 in module 'SimpleTest.exe'. Write of address 0000000000000014: Exception "EAccessViolation"
-  at SimpleTest.exe: TestEAccessViolation in SimpleTest.dpr (Line 209)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 458)
-  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 477)
+Access violation at address 00000000004E5856 in module 'SimpleTest.exe'. Write of address 0000000000000014: Exception "EAccessViolation"
+  at SimpleTest.exe: TestEAccessViolation in SimpleTest.dpr (Line 214)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 510)
+  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 529)
   at KERNEL32.DLL: BaseThreadInitThunk + 0x17
   at ntdll.dll: RtlUserThreadStart + 0x2C
-Access violation at address 00000000004E582E in module 'SimpleTest.exe'. Write of address 0000000000000014: Exception "EAccessViolation"
-  at SimpleTest.exe: TestEAccessViolation in SimpleTest.dpr (Line 234)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 458)
-  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 477)
+Access violation at address 00000000004E591E in module 'SimpleTest.exe'. Write of address 0000000000000014: Exception "EAccessViolation"
+  at SimpleTest.exe: TestEAccessViolation in SimpleTest.dpr (Line 239)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 510)
+  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 529)
   at KERNEL32.DLL: BaseThreadInitThunk + 0x17
   at ntdll.dll: RtlUserThreadStart + 0x2C
 ~~~~~~~~~~~~
 Not implemented: Exception "EOleException"
   at SimpleTest.exe: CheckAutoResult in System.pas (Line 37585)
-  at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 311)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 462)
-  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 477)
+  at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 316)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 514)
+  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 529)
   at KERNEL32.DLL: BaseThreadInitThunk + 0x17
   at ntdll.dll: RtlUserThreadStart + 0x2C
 Not implemented: Exception "EOleException"
   at SimpleTest.exe: CheckAutoResult in System.pas (Line 37585)
-  at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 334)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 462)
-  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 477)
+  at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 339)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 514)
+  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 529)
   at KERNEL32.DLL: BaseThreadInitThunk + 0x17
   at ntdll.dll: RtlUserThreadStart + 0x2C
 ~~~~~~~~~~~~
 Interface not supported: Exception "EIntfCastError"
   at SimpleTest.exe: ErrorAt in System.pas (Line 5543)
   at SimpleTest.exe: IntfCast in System.pas (Line 36609)
-  at SimpleTest.exe: TestIntfCastException in SimpleTest.dpr (Line 386)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 466)
-  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 477)
+  at SimpleTest.exe: TestIntfCastException in SimpleTest.dpr (Line 391)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 518)
+  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 529)
   at KERNEL32.DLL: BaseThreadInitThunk + 0x17
   at ntdll.dll: RtlUserThreadStart + 0x2C
 ~~~~~~~~~~~~
 Callstack from inside EnumWindows:
-  at SimpleTest.exe: EnumWindowsCallback in SimpleTest.dpr (Line 402)
+  at SimpleTest.exe: EnumWindowsCallback in SimpleTest.dpr (Line 450)
   at user32.dll: EnumWindows + 0x116
-  at SimpleTest.exe: TestCallStackFromWithinWindowsCallback in SimpleTest.dpr (Line 413)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 470)
-  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 477)
+  at SimpleTest.exe: TestCallStackFromWithinWindowsCallback in SimpleTest.dpr (Line 461)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 522)
+  at SimpleTest.exe: SimpleTest in SimpleTest.dpr (Line 529)
   at KERNEL32.DLL: BaseThreadInitThunk + 0x17
   at ntdll.dll: RtlUserThreadStart + 0x2C
 Finished (press ENTER).
