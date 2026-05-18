@@ -1,16 +1,16 @@
-Stacktrace without exception:
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 488)
+ï»¿Stacktrace without exception:
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 487)
   at SimpleTest.exe: SimpleTest + 0x1D
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
 ~~~~~~~~~~~~
-UnicodeTest: Exception "Exceptionµ"
-  at SimpleTest.exe: UnicodeTest€äöüß in SimpleTest.dpr (Line 414)
-  at SimpleTest.exe: UnicodeTest³€Äöüß² in SimpleTest.dpr (Line 419)
-  at SimpleTest.exe: UnicodeTest€ÄöÜß in SimpleTest.dpr (Line 423)
-  at SimpleTest.exe: TestUnicodeSymbolNames in SimpleTest.dpr (Line 431)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 494)
+UnicodeTest: Exception "ExceptionÂµ"
+  at SimpleTest.exe: UnicodeTestâ‚¬Ã¤Ã¶Ã¼ÃŸ in SimpleTest.dpr (Line 413)
+  at SimpleTest.exe: UnicodeTestÂ³â‚¬Ã„Ã¶Ã¼ÃŸÂ² in SimpleTest.dpr (Line 418)
+  at SimpleTest.exe: UnicodeTestâ‚¬Ã„Ã¶ÃœÃŸ in SimpleTest.dpr (Line 422)
+  at SimpleTest.exe: TestUnicodeSymbolNames in SimpleTest.dpr (Line 430)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 493)
   at SimpleTest.exe: SimpleTest + 0x1D
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
@@ -18,14 +18,14 @@ UnicodeTest: Exception "Exceptionµ"
 ~~~~~~~~~~~~
 Exception #1: Exception "Exception"
   at SimpleTest.exe: TestDelpiException in SimpleTest.dpr (Line 70)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 498)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 497)
   at SimpleTest.exe: SimpleTest + 0x1D
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
 Exception #2: Exception "Exception"
   at SimpleTest.exe: TestDelpiException in SimpleTest.dpr (Line 93)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 498)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 497)
   at SimpleTest.exe: SimpleTest + 0x1D
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
@@ -33,29 +33,29 @@ Exception #2: Exception "Exception"
 ~~~~~~~~~~~~
 Division durch Null: Exception "EDivByZero"
   at SimpleTest.exe: TestOsException in SimpleTest.dpr (Line 144)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 504)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 503)
   at SimpleTest.exe: SimpleTest + 0x1D
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
 Division durch Null: Exception "EDivByZero"
   at SimpleTest.exe: TestOsException in SimpleTest.dpr (Line 169)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 504)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 503)
   at SimpleTest.exe: SimpleTest + 0x1D
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
 ~~~~~~~~~~~~
-Zugriffsverletzung bei Adresse 0016882B in Modul 'SimpleTest.exe'. Schreiben von Adresse 00000014: Exception "EAccessViolation"
+Zugriffsverletzung bei Adresse 009A882B in Modul 'SimpleTest.exe'. Schreiben von Adresse 00000014: Exception "EAccessViolation"
   at SimpleTest.exe: TestEAccessViolation in SimpleTest.dpr (Line 214)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 510)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 509)
   at SimpleTest.exe: SimpleTest + 0x1D
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
-Zugriffsverletzung bei Adresse 0016892C in Modul 'SimpleTest.exe'. Schreiben von Adresse 00000014: Exception "EAccessViolation"
+Zugriffsverletzung bei Adresse 009A892C in Modul 'SimpleTest.exe'. Schreiben von Adresse 00000014: Exception "EAccessViolation"
   at SimpleTest.exe: TestEAccessViolation in SimpleTest.dpr (Line 239)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 510)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 509)
   at SimpleTest.exe: SimpleTest + 0x1D
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
@@ -64,7 +64,7 @@ Zugriffsverletzung bei Adresse 0016892C in Modul 'SimpleTest.exe'. Schreiben von
 Not implemented: Exception "EOleException"
   at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 314)
   at SimpleTest.exe: CheckAutoResult in System.pas (Line 21835)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 514)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 513)
   at SimpleTest.exe: SimpleTest + 0x1D
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
@@ -72,27 +72,27 @@ Not implemented: Exception "EOleException"
 Not implemented: Exception "EOleException"
   at SimpleTest.exe: TestSafecallException in SimpleTest.dpr (Line 339)
   at SimpleTest.exe: CheckAutoResult in System.pas (Line 21835)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 514)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 513)
   at SimpleTest.exe: SimpleTest + 0x1D
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
 ~~~~~~~~~~~~
-Interface nicht unterstützt: Exception "EIntfCastError"
+Interface nicht unterstÃ¼tzt: Exception "EIntfCastError"
   at SimpleTest.exe: TExceptionHelp.ErrorProc in Stacktrace.pas (Line 669)
   at SimpleTest.exe: ErrorAt in System.pas (Line 4058)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 518)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 517)
   at SimpleTest.exe: SimpleTest + 0x1D
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B
   at ntdll.dll: RtlGetAppContainerNamedObjectPath + 0x231
 ~~~~~~~~~~~~
 Callstack from inside EnumWindows:
-  at SimpleTest.exe: EnumWindowsCallback in SimpleTest.dpr (Line 450)
+  at SimpleTest.exe: EnumWindowsCallback in SimpleTest.dpr (Line 449)
   at user32.dll: GetWindow + 0xADD
   at user32.dll: EnumWindows + 0x1A
-  at SimpleTest.exe: TestCallStackFromWithinWindowsCallback in SimpleTest.dpr (Line 461)
-  at SimpleTest.exe: Main in SimpleTest.dpr (Line 522)
+  at SimpleTest.exe: TestCallStackFromWithinWindowsCallback in SimpleTest.dpr (Line 460)
+  at SimpleTest.exe: Main in SimpleTest.dpr (Line 521)
   at SimpleTest.exe: SimpleTest + 0x1D
   at KERNEL32.DLL: BaseThreadInitThunk + 0x19
   at ntdll.dll: RtlInitializeExceptionChain + 0x6B

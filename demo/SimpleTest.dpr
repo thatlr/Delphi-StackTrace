@@ -380,7 +380,6 @@ var
   Intf: IUnknown;
   Intf2: IDispatch;
 begin
-  // retrieve IDList:
   Intf := TTestComErrObj.Create;
 
   try
